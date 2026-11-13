@@ -10,6 +10,8 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   await page.locator('#guest').click();
   await expect(page.locator('#game')).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.worldTiles() || 0)).toBeGreaterThan(1000);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.frames || 0)).toBeGreaterThan(3);
+  expect(errors, 'Browser runtime errors').toEqual([]);
 
   const before = await page.evaluate(() => {
     const c = document.querySelector('#world');
