@@ -17,24 +17,20 @@
 #bag{position:absolute;right:9px;top:83px;width:min(205px,36vw);max-height:34vh;overflow:auto;background:#101b2de8;border:2px solid #718098;border-radius:8px;padding:7px;font-size:10px;pointer-events:auto}#bag h3{margin:0 0 6px;color:#ffdc79;font-size:11px}#items{display:grid;grid-template-columns:1fr 1fr;gap:4px}.item{background:#2a3a50;padding:5px;border-radius:4px;display:flex;justify-content:space-between;gap:3px}
 #craft button{font-size:11px}#toast{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);padding:10px 15px;background:#101b2df2;border:2px solid #ffdc79;border-radius:9px;font-weight:800;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 @media(orientation:portrait){
-#game{inset:auto;left:0;top:0;width:100vh;height:100vw;transform-origin:top left;transform:rotate(90deg) translateY(-100%);overflow:hidden}
-#world{width:100%;height:100%}
-#hud{top:7px;left:10px;right:10px;gap:10px;align-items:center}
-.hudgroup{gap:6px;flex-wrap:nowrap}
-.chip{padding:5px 9px;font-size:12px;white-space:nowrap}
-.chip b{font-size:15px}
-.hudgroup button{padding:7px 11px;font-size:11px;white-space:nowrap}
-#depth{top:52px;left:10px;font-size:11px}
-#hint{top:auto;bottom:9px;left:50%;font-size:10px;max-width:55%;overflow:hidden;text-overflow:ellipsis}
-#hint:after{content:''}
-#bag{width:190px;max-height:38vh;top:58px;right:10px}
-#mobile{inset:auto 18px 66px}
-.touchBtn{width:58px;height:58px}
-.touchBtn.mine{width:72px;height:72px}
-#hotbar{bottom:8px}
-.slot{width:46px;height:46px}
-}
-</style></head>
+#hud{gap:4px;align-items:flex-start}
+.hudgroup{gap:4px;flex-wrap:wrap}
+.chip{padding:4px 6px;font-size:10px}
+.chip b{font-size:12px}
+.hudgroup button{padding:5px 7px;font-size:9px}
+#depth{top:58px;left:8px;font-size:9px}
+#hint{top:86px;max-width:92vw;white-space:normal;text-align:center;font-size:9px}
+#bag{width:125px;top:120px;max-height:30vh}
+#mobile{inset:auto 10px calc(62px + env(safe-area-inset-bottom,0px))}
+.touchBtn{width:50px;height:50px}
+.touchBtn.mine{width:64px;height:64px}
+#hotbar{bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+.slot{width:36px;height:38px}
+}</style></head>
 <body>
 <section id="splash"><div class="box"><div class="logo">⛏️</div><div class="brand">GOLDEN DEPTHS</div><p class="tag">DIG DEEP • FIND RARE ORES • EXPLORE</p><div style="height:5px;background:#ffffff22;border-radius:8px;overflow:hidden;margin:22px"><div style="height:100%;width:0;background:#ffd36b;animation:load 2s forwards"></div></div></div></section>
 <style>@keyframes load{to{width:100%}}</style>
@@ -55,13 +51,13 @@ async function auth(kind){if(!sb){$('authmsg').textContent='Konfigurasi Supabase
 async function enter(u){user=u;let raw=(u.email||'miner').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20),name=raw.length>=3?raw:'miner'+u.id.slice(0,5);let r=await sb.rpc('golden_start',{p_username:name});if(r.error){$('authmsg').textContent=r.error.message;return}screen('game');await refresh();startGame();landscape()}
 async function refresh(){if(!sb||!user)return;let [s,i]=await Promise.all([sb.from('golden_player_state').select('*').eq('user_id',user.id).maybeSingle(),sb.from('golden_inventory').select('item_code,quantity,golden_item_catalog(name,rarity)').eq('user_id',user.id)]);if(s.data){stats={gold:s.data.gold||0,level:s.data.level||1,pick:s.data.pickaxe_level||1};$('gold').textContent=stats.gold.toLocaleString('id-ID');$('level').textContent=stats.level;$('pick').textContent=stats.pick}let arr=i.data||[];$('items').innerHTML=arr.length?arr.map(x=>'<div class="item"><span>'+((x.golden_item_catalog&&x.golden_item_catalog.name)||x.item_code)+'</span><b>×'+x.quantity+'</b></div>').join(''):'<span>Belum ada item online</span>'}
 async function rpc(name){if(busy)return;busy=true;let r=await sb.rpc(name);busy=false;if(r.error)toast(r.error.message);else{toast(typeof r.data==='string'?r.data:'Berhasil');await refresh()}}
-function landscape(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().then(()=>window.screen.orientation?.lock?.('landscape')).catch(()=>{});else window.screen.orientation?.lock?.('landscape')}catch(e){}}
+function landscape(){try{const p=document.documentElement.requestFullscreen?.();if(p&&p.then)p.then(()=>window.screen.orientation?.lock?.('landscape')).catch(()=>{});else window.screen.orientation?.lock?.('landscape') }catch(e){}}
 const c=$('world'),g=c.getContext('2d'),S=24,WW=240,WH=100;let cw=0,ch=0,scale=1,camX=0,camY=0,world=[],drops=[],particles=[],last=0,raf=0,frameNo=0;
 const defs={0:{name:'Dirt',color:'#805335',icon:'🟫'},1:{name:'Grass',color:'#4e873e'},2:{name:'Stone',color:'#626a75',icon:'🪨'},3:{name:'Copper',color:'#b8754b',icon:'🟠'},4:{name:'Iron',color:'#aeb9c5',icon:'⚙️'},5:{name:'Gold',color:'#e9bb42',icon:'🟡'},6:{name:'Crystal',color:'#58d9e8',icon:'💎'},7:{name:'Bedrock',color:'#252a35'}};
 let player={x:WW*S/2,y:0,vx:0,vy:0,w:16,h:29,ground:false,face:1,walk:0,hp:100,invuln:0},input={left:false,right:false,jump:false};let slimes=[],lamps=[],worldSeed=7;
 function rnd(x,y){let n=Math.sin(x*127.1+y*311.7+9.2)*43758.5453;return n-Math.floor(n)}
 function generate(){world=Array.from({length:WH},()=>Array(WW).fill(-1));let surface=[];for(let x=0;x<WW;x++){let h=22+Math.floor(Math.sin(x*.075)*2+Math.sin(x*.021)*4+rnd(x,2)*2);surface[x]=h;for(let y=h;y<WH;y++){let v=y===h?1:y<h+5?0:2;let r=rnd(x,y);if(y>h+7&&r>.987)v=3;if(y>h+12&&r>.993)v=4;if(y>h+22&&r>.994)v=5;if(y>h+30&&r>.997)v=6;world[y][x]=v}}for(let i=0;i<95;i++){let x=4+Math.floor(rnd(i,3)*(WW-8)),y=30+Math.floor(rnd(i,8)*62),rx=3+rnd(i,4)*7,ry=2+rnd(i,5)*4;for(let yy=Math.max(24,y-ry);yy<Math.min(WH-1,y+ry);yy++)for(let xx=Math.max(1,x-rx);xx<Math.min(WW-1,x+rx);xx++)if(((xx-x)/rx)**2+((yy-y)/ry)**2<1&&world[yy][xx]!==7)world[yy][xx]=-1}for(let y=WH-2;y<WH;y++)for(let x=0;x<WW;x++)world[y][x]=7;player.x=WW*S/2;player.y=(surface[Math.floor(player.x/S)]-2)*S;player.vx=player.vy=0;slimes=[];lamps=[];for(let i=0;i<22;i++){let x=10+Math.floor(rnd(i,90)*(WW-20)),y=surface[x];if(x>8&&x<WW-8)slimes.push({x:x*S,y:y*S-8,vx:rnd(i,91)>.5?24:-24,hp:2,phase:rnd(i,92)*6})}}
-function resize(){let d=Math.min(devicePixelRatio||1,2),portrait=matchMedia('(orientation: portrait)').matches;cw=portrait?innerHeight:innerWidth;ch=portrait?innerWidth:innerHeight;c.width=Math.floor(cw*d);c.height=Math.floor(ch*d);c.style.width=cw+'px';c.style.height=ch+'px';g.setTransform(d,0,0,d,0,0);scale=1}
+function resize(){let d=Math.min(devicePixelRatio||1,2);cw=innerWidth;ch=innerHeight;c.width=Math.floor(cw*d);c.height=Math.floor(ch*d);c.style.width='100%';c.style.height='100%';g.setTransform(d,0,0,d,0,0);scale=1}
 addEventListener('resize',resize);resize();
 function blockAt(px,py){let x=Math.floor(px/S),y=Math.floor(py/S);if(x<0||x>=WW)return 7;if(y<0)return -1;if(y>=WH)return 7;return world[y][x]}
 function solid(v){return v>=0}
