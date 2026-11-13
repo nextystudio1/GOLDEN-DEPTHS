@@ -1,133 +1,51 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10131c">
-<title>GOLDEN DEPTHS — Mining Adventure</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=2"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#10131c">
+<title>GOLDEN DEPTHS — 2D Mining Adventure</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js?v=2"></script>
 <style>
-:root{--gold:#ffd36b;--gold2:#b97828;--ink:#10131c;--panel:#202838;--line:#46536a;--muted:#aab4c4;--green:#8ed6a0}
-*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;background:#0d1119;color:#f7f3e9;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{min-height:100dvh;overflow-x:hidden;background:radial-gradient(ellipse at 50% 0%,#33465b 0,#171e2b 48%,#0c1018 100%)}
-button,input{font:inherit}button{cursor:pointer;border:1px solid #ffe09a;border-bottom:4px solid #8c571c;border-radius:9px;padding:12px 18px;color:#271a08;font-weight:950;letter-spacing:.7px;background:linear-gradient(#ffe69a,#e6a83e);box-shadow:0 5px 0 #090d14, inset 0 1px #fff8;transition:transform .12s,filter .12s}button:active{transform:translateY(3px);border-bottom-width:1px;box-shadow:0 2px 0 #090d14}button:disabled{opacity:.5;cursor:wait}button.secondary{background:linear-gradient(#58677d,#354256);color:#fff;border-color:#8291a7;border-bottom-color:#1b2533}.hidden{display:none!important}
-#splash,#titleScreen,#authScreen{position:fixed;inset:0;display:grid;place-items:center;padding:20px;z-index:5;background:radial-gradient(ellipse at center,#34485d 0,#171e2b 55%,#0a0e15 100%)}
-.splash-content{text-align:center;animation:rise 1.1s cubic-bezier(.2,.8,.2,1) both}.logo-mark{width:clamp(90px,17vh,150px);height:clamp(90px,17vh,150px);margin:0 auto 16px;display:grid;place-items:center;border:4px solid #f8d77e;border-radius:28px;background:linear-gradient(145deg,#66788a,#263648 55%,#151d29);box-shadow:0 0 0 8px #f6c65b18,0 0 45px #ffc85b55,inset 0 0 25px #fff2;animation:logoIn 1.25s cubic-bezier(.15,.8,.25,1) both,glow 2.3s 1.2s ease-in-out infinite alternate}.logo-mark span{font-size:clamp(48px,10vh,82px);filter:drop-shadow(0 5px 2px #0008)}.game-title{font-size:clamp(28px,6vw,58px);font-weight:1000;letter-spacing:clamp(3px,1vw,9px);color:var(--gold);text-shadow:0 4px 0 #724819,0 8px 24px #000b;animation:titleIn 1s .3s both}.tagline{margin-top:8px;color:#d0d9e5;letter-spacing:3px;font-size:clamp(10px,2vw,14px);animation:fade .9s .8s both}.loading-line{width:min(250px,65vw);height:6px;margin:30px auto 0;background:#ffffff20;border-radius:20px;overflow:hidden}.loading-line i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#b97828,#ffe69a);transform-origin:left;animation:load 2.4s ease-out both}
-@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}@keyframes logoIn{0%{opacity:0;transform:scale(.35) rotate(-18deg)}70%{opacity:1;transform:scale(1.08) rotate(4deg)}100%{transform:scale(1) rotate(0)}}@keyframes glow{from{box-shadow:0 0 0 7px #f6c65b12,0 0 24px #ffc85b33,inset 0 0 18px #fff1}to{box-shadow:0 0 0 10px #f6c65b22,0 0 55px #ffc85b88,inset 0 0 28px #fff3}}@keyframes titleIn{from{opacity:0;letter-spacing:15px;transform:translateY(15px)}to{opacity:1;letter-spacing:clamp(3px,1vw,9px);transform:none}}@keyframes fade{from{opacity:0}to{opacity:1}}@keyframes load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.title-box,.auth-box{width:min(560px,96vw);padding:clamp(20px,4vw,38px);text-align:center;border:1px solid #75839a66;border-radius:20px;background:linear-gradient(145deg,#29374beF,#151d2bea);box-shadow:0 25px 70px #0009,inset 0 1px #ffffff18}.title-box .game-title{margin-bottom:8px}.menu-buttons{display:grid;gap:12px;width:min(300px,100%);margin:26px auto 0}.menu-note{color:var(--muted);font-size:12px;margin-top:20px}.auth-box{text-align:left}.auth-box h2{text-align:center;color:var(--gold);margin:0 0 6px}.auth-box p{text-align:center;color:var(--muted);margin:0 0 20px;font-size:13px}.auth-box label{font-size:12px;color:#dce3ec;font-weight:700}.auth-box input{display:block;width:100%;margin:6px 0 14px;padding:13px;border:1px solid #56647a;border-radius:9px;background:#101722;color:white;outline:none}.auth-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #ffd36b20}.auth-actions{display:flex;gap:10px}.auth-actions button{flex:1}.notice{min-height:22px;color:var(--gold);font-size:13px;text-align:center;margin-top:12px;overflow-wrap:anywhere}
-#game{max-width:1200px;margin:auto;padding:12px;min-height:100dvh}.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px;background:#182230eF;border:1px solid var(--line);border-radius:12px;box-shadow:0 5px 20px #0005}.mini-brand{font-weight:1000;letter-spacing:2px;color:var(--gold);font-size:clamp(14px,2vw,20px)}.player-name{font-size:12px;color:var(--muted)}.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hud-card{padding:9px 12px;background:linear-gradient(145deg,#29364a,#182230);border:1px solid #46536a;border-radius:10px}.hud-card small{display:block;color:#b8c4d4;font-size:10px;letter-spacing:1.4px;font-weight:800}.hud-card strong{display:block;color:var(--gold);font-size:clamp(17px,3vw,25px);font-weight:1000}
-.game-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,290px);gap:10px}.scene-card,.side-card{border:1px solid #46536a;border-radius:13px;background:linear-gradient(145deg,#263449,#151d29);padding:10px;box-shadow:0 8px 25px #0005}.scene{height:clamp(210px,43vh,430px);position:relative;overflow:hidden;border-radius:9px;border:2px solid #53647a;background:linear-gradient(#182a3b 0%,#23364a 48%,#171e29 49%,#111722 100%);display:flex;align-items:center;justify-content:center;text-align:center}.scene:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 52%,#f3b94a18,transparent 45%),repeating-linear-gradient(165deg,transparent 0 42px,#00000012 43px 46px)}.cave-art{position:relative;z-index:1}.crystal{font-size:clamp(52px,9vh,90px);filter:drop-shadow(0 0 15px #73d9ff99);animation:float 2.5s ease-in-out infinite}.scene-title{font-size:clamp(17px,3vw,25px);font-weight:1000;letter-spacing:3px;color:#f5d58c;text-shadow:0 3px #382a1b}.scene-sub{font-size:12px;color:#c2cfdb;margin-top:5px}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}.action-bar{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;margin-top:10px}.action-bar button{padding:12px 6px;font-size:clamp(10px,1.6vw,14px)}.side-card h3{font-size:14px;margin:2px 0 10px;color:var(--gold);letter-spacing:1px}.inventory{display:grid;gap:7px}.item{display:flex;justify-content:space-between;gap:6px;padding:9px;background:#101722;border:1px solid #344255;border-radius:8px;font-size:12px}.item b{color:var(--gold)}.side-card+.side-card{margin-top:10px}.hint{font-size:11px;color:var(--muted);line-height:1.5}.rotate-tip{display:none}
-@media(orientation:portrait){.rotate-tip{display:flex;position:fixed;z-index:20;inset:auto 12px 12px;justify-content:center;align-items:center;text-align:center;padding:10px;border:1px solid #e4bd62;border-radius:10px;background:#171e2bf2;color:#ffe4a1;font-size:12px;box-shadow:0 5px 20px #0009}#game{padding:10px}.game-layout{grid-template-columns:1fr}.side-column{display:grid;grid-template-columns:1fr 1fr;gap:8px}.side-card+.side-card{margin-top:0}.scene{height:34vh}}
-@media(orientation:landscape){#game{padding:8px 14px}.topbar{padding:6px 12px}.hud{margin:7px 0}.hud-card{padding:6px 10px}.game-layout{grid-template-columns:minmax(0,1fr) minmax(220px,29%)}.scene{height:calc(100dvh - 185px);min-height:180px}.side-column{display:flex;flex-direction:column}.side-card{flex:1;min-height:0}.inventory{grid-template-columns:1fr 1fr}.item{padding:7px;font-size:11px}.action-bar{margin-top:7px}.action-bar button{padding:9px 5px}}
-</style>
-</head>
-<body>
-<section id="splash">
- <div class="splash-content">
-  <div class="logo-mark"><span>⛏️</span></div>
-  <div class="game-title">GOLDEN DEPTHS</div>
-  <div class="tagline">MINING • DISCOVER • ADVENTURE</div>
-  <div class="loading-line"><i></i></div>
- </div>
-</section>
-<section id="titleScreen" class="hidden">
- <div class="title-box">
-  <div class="logo-mark"><span>⛏️</span></div>
-  <div class="game-title">GOLDEN DEPTHS</div>
-  <div class="tagline">THE CAVE IS WAITING FOR YOU</div>
-  <div class="menu-buttons">
-   <button id="startBtn">▶ MULAI PETUALANGAN</button>
-   <button id="backBtn" class="secondary">KEMBALI KE INTRO</button>
-  </div>
-  <div class="menu-note">ONLINE MINING ADVENTURE · SAVE DATA ONLINE</div>
- </div>
-</section>
-<section id="authScreen" class="hidden">
- <div class="auth-box">
-  <h2>MASUK KE DUNIA TAMBANG</h2>
-  <p>Buat akun atau masuk untuk menyimpan progres petualanganmu.</p>
-  <label for="email">EMAIL</label><input id="email" type="email" autocomplete="email" placeholder="email@example.com">
-  <label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter">
-  <div class="auth-actions"><button id="signup">DAFTAR</button><button id="login" class="secondary">MASUK</button></div>
-  <div id="authmsg" class="notice"></div>
-  <div style="text-align:center;margin-top:12px"><button id="authBack" class="secondary">← KEMBALI</button></div>
- </div>
-</section>
-<main id="game" class="hidden">
- <header class="topbar"><div><div class="mini-brand">GOLDEN DEPTHS</div><div class="player-name">ONLINE MINING ADVENTURE</div></div><div style="text-align:right"><div id="player" style="font-weight:800">Penambang</div><button id="logout" class="secondary" style="padding:7px 12px;font-size:11px">KELUAR</button></div></header>
- <section class="hud">
-  <div class="hud-card"><small>🪙 GOLD</small><strong id="gold">0</strong></div>
-  <div class="hud-card"><small>⭐ LEVEL</small><strong id="level">1</strong></div>
-  <div class="hud-card"><small>⛏️ PICKAXE</small><strong id="picklevel">1</strong></div>
- </section>
- <section class="game-layout">
-  <div class="scene-card">
-   <div class="scene"><div class="cave-art"><div class="crystal">💎</div><div class="scene-title">CRYSTAL CAVE</div><div class="scene-sub">Jelajahi gua dan kumpulkan mineral langka</div></div></div>
-   <div class="action-bar"><button id="mine">⛏️ TAMBANG</button><button id="sell" class="secondary">JUAL ORE</button><button id="upgrade" class="secondary">UPGRADE</button></div>
-   <div id="gamemsg" class="notice"></div>
-  </div>
-  <aside class="side-column">
-   <div class="side-card"><h3>🎒 BACKPACK</h3><div id="inventory" class="inventory"><div class="hint">Tas masih kosong. Mulai menambang untuk mendapatkan ore!</div></div></div>
-   <div class="side-card"><h3>📜 PETUNJUK</h3><div class="hint">• Tekan TAMBANG untuk mencari mineral.<br>• Jual ore untuk mendapatkan Gold.<br>• Upgrade pickaxe untuk meningkatkan kemampuan menambang.<br><br>Progres akun disimpan secara online.</div></div>
-  </aside>
- </section>
-</main>
-<div class="rotate-tip">↻ Putar perangkat ke posisi LANDSCAPE untuk pengalaman bermain terbaik.</div>
+:root{--gold:#ffd36b;--panel:#182333;--line:#52627a}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090e16;color:#fff;font-family:system-ui,Segoe UI,sans-serif;touch-action:none}button,input{font:inherit}button{border:1px solid #ffe5a1;border-bottom:4px solid #8c571c;border-radius:9px;padding:10px 16px;background:linear-gradient(#ffe69a,#e5a53a);color:#291b08;font-weight:900;cursor:pointer}button.secondary{background:linear-gradient(#58677d,#354256);border-color:#8998ad;border-bottom-color:#1b2533;color:#fff}.hidden{display:none!important}
+#splash,#menu,#auth{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:radial-gradient(ellipse,#34485d,#171e2b 60%,#090d14)}.splash{text-align:center;animation:rise 1s both}.logo{width:110px;height:110px;margin:auto auto 14px;display:grid;place-items:center;border:4px solid #f8d77e;border-radius:27px;background:linear-gradient(145deg,#66788a,#182536);box-shadow:0 0 45px #ffc85b66;animation:logo 1.2s both,glow 2s 1s infinite alternate}.logo span{font-size:64px}.brand{font-size:clamp(28px,6vw,56px);font-weight:1000;letter-spacing:5px;color:var(--gold);text-shadow:0 4px #724819}.tag{color:#d0d9e5;letter-spacing:3px;font-size:12px;margin-top:7px}.box{width:min(480px,95vw);padding:28px;text-align:center;border:1px solid #75839a77;border-radius:18px;background:linear-gradient(145deg,#29374bee,#151d2bee);box-shadow:0 20px 60px #0009}.menu-buttons{display:grid;gap:12px;width:min(290px,100%);margin:25px auto}.box input{display:block;width:100%;padding:13px;margin:8px 0 14px;background:#101722;color:#fff;border:1px solid #52627a;border-radius:8px}.box label{display:block;text-align:left;font-size:12px;color:#dce3ec}.msg{font-size:12px;color:var(--gold);min-height:20px;margin-top:12px;overflow-wrap:anywhere}@keyframes rise{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:none}}@keyframes logo{0%{opacity:0;transform:scale(.3) rotate(-20deg)}75%{transform:scale(1.08) rotate(4deg)}100%{opacity:1;transform:none}}@keyframes glow{to{box-shadow:0 0 60px #ffc85b99}}
+#game{position:fixed;inset:0;background:#101720}#world{width:100%;height:100%;display:block;image-rendering:pixelated}
+#topHud{position:absolute;top:env(safe-area-inset-top,8px);left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:8px}.hudgroup{display:flex;gap:6px;flex-wrap:wrap}.hud{background:#101a2adf;border:1px solid #64738a;border-radius:8px;padding:6px 10px;box-shadow:0 3px 12px #0007;font-size:12px}.hud b{color:var(--gold);font-size:15px}.hud button{pointer-events:auto;padding:6px 10px;font-size:11px}
+#tip{position:absolute;top:55px;left:50%;transform:translateX(-50%);background:#101a2acc;border:1px solid #7b8ca2;border-radius:20px;padding:5px 12px;font-size:11px;color:#f7d98d;white-space:nowrap;pointer-events:none}
+#controls{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}.pad{width:128px;height:128px;border-radius:50%;background:#101a2a88;border:2px solid #9aa9bd88;position:relative;pointer-events:auto;touch-action:none;box-shadow:inset 0 0 20px #0008}.stick{position:absolute;width:48px;height:48px;border-radius:50%;background:linear-gradient(#ffe69a,#bc7d27);border:2px solid #fff0b8;left:38px;top:38px;box-shadow:0 3px 12px #0009}.rightControls{display:flex;align-items:flex-end;gap:12px;pointer-events:auto}.actionBtn{width:78px;height:78px;border-radius:50%;font-size:12px;padding:5px;box-shadow:0 5px 0 #7c4d18,0 7px 18px #0008}.smallBtn{width:58px;height:58px;border-radius:50%;font-size:10px;padding:4px}
+#toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#101a2aee;border:1px solid var(--gold);border-radius:10px;padding:12px 18px;color:#ffe3a0;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center;max-width:80vw}
+#bag{position:absolute;right:10px;top:105px;width:min(210px,34vw);max-height:36vh;overflow:auto;background:#101a2adf;border:1px solid #64738a;border-radius:9px;padding:8px;font-size:11px;pointer-events:auto}#bag h3{margin:0 0 6px;color:var(--gold);font-size:12px}#bagitems{display:grid;grid-template-columns:1fr 1fr;gap:4px}.bagitem{background:#263449;padding:5px;border-radius:5px;display:flex;justify-content:space-between;gap:4px}
+@media(orientation:portrait){#tip:after{content:' • Putar HP ke landscape';}.pad{width:112px;height:112px}.stick{left:31px;top:31px}.actionBtn{width:70px;height:70px}#bag{top:100px;width:130px}}
+</style></head><body>
+<section id="splash"><div class="splash"><div class="logo"><span>⛏️</span></div><div class="brand">GOLDEN DEPTHS</div><div class="tag">MINING • DISCOVER • ADVENTURE</div><div style="width:220px;height:5px;background:#fff2;margin:28px auto;border-radius:9px;overflow:hidden"><i style="display:block;height:100%;background:#ffd36b;animation:bar 2.5s both"></i></div></div></section>
+<section id="menu" class="hidden"><div class="box"><div class="logo"><span>⛏️</span></div><div class="brand">GOLDEN DEPTHS</div><div class="tag">2D TOP-DOWN MINING WORLD</div><div class="menu-buttons"><button id="play">▶ PLAY GAME</button><button class="secondary" id="intro">INTRO</button></div><div class="tag">EXPLORE • MINE • COLLECT</div></div></section>
+<section id="auth" class="hidden"><div class="box"><h2 style="color:var(--gold)">PLAYER LOGIN</h2><p class="tag">SIMPAN PETUALANGAN ONLINE</p><label>EMAIL</label><input id="email" type="email" placeholder="email@example.com"><label>PASSWORD</label><input id="password" type="password" placeholder="Minimal 6 karakter"><div style="display:flex;gap:8px"><button id="signup" style="flex:1">DAFTAR</button><button id="login" class="secondary" style="flex:1">MASUK</button></div><div id="authmsg" class="msg"></div><button id="authback" class="secondary">KEMBALI</button></div></section>
+<section id="game" class="hidden"><canvas id="world"></canvas><div id="topHud"><div class="hudgroup"><div class="hud">🪙 GOLD <b id="gold">0</b></div><div class="hud">⭐ LV <b id="level">1</b></div><div class="hud">⛏️ <b id="picklevel">1</b></div></div><div class="hudgroup"><div class="hud" id="player">PENAMBANG</div><button id="sell" class="secondary">SELL ORE</button><button id="upgrade" class="secondary">UPGRADE</button><button id="logout" class="secondary">EXIT</button></div></div><div id="tip">GERAK: JOYSTICK / WASD • DEKATI MINERAL LALU TAMBANG</div><div id="bag"><h3>🎒 BACKPACK</h3><div id="bagitems">Kosong</div></div><div id="toast"></div><div id="controls"><div class="pad" id="pad"><div class="stick" id="stick"></div></div><div class="rightControls"><button id="mine" class="actionBtn">⛏️<br>TAMBANG</button></div></div></section>
 <script>
-const cfg=window.GOLDEN_CONFIG||{};
-const client=(window.supabase&&cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY)?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
-const $=id=>document.getElementById(id);
-let busy=false;
-function message(id,text){$(id).textContent=text}
-function showScreen(id){['splash','titleScreen','authScreen','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
-function showGame(on){$('game').classList.toggle('hidden',!on)}
-async function authAction(kind){
- if(!client){message('authmsg','Konfigurasi server belum terbaca. Periksa config.js.');return}
- const email=$('email').value.trim(),password=$('password').value;
- if(!email||password.length<6){message('authmsg','Isi email dan password minimal 6 karakter.');return}
- message('authmsg','Menghubungkan ke server...');
- const result=kind==='signup'?await client.auth.signUp({email,password}):await client.auth.signInWithPassword({email,password});
- if(result.error){message('authmsg',result.error.message);return}
- if(!result.data.session){message('authmsg','Pendaftaran berhasil. Jika verifikasi email aktif, buka email verifikasi lalu masuk.');return}
- await enterGame(result.data.user);
-}
-async function enterGame(user){
- showScreen('game');$('player').textContent='PENAMBANG';
- const raw=(user.email||'miner').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20);
- const username=raw.length>=3?raw:'miner'+user.id.slice(0,5);
- const {error}=await client.rpc('golden_start',{p_username:username});
- if(error){message('gamemsg','Akun tersambung, tetapi data pemain gagal dimuat: '+error.message);return}
- await refresh();
-}
-async function refresh(){
- const {data:userData}=await client.auth.getUser();if(!userData.user)return;
- const [state,inv,profile]=await Promise.all([
-  client.from('golden_player_state').select('*').eq('user_id',userData.user.id).maybeSingle(),
-  client.from('golden_inventory').select('item_code,quantity,golden_item_catalog(name,rarity)').eq('user_id',userData.user.id),
-  client.from('golden_profiles').select('username').eq('user_id',userData.user.id).maybeSingle()
- ]);
- if(state.error)message('gamemsg','Gagal membaca status pemain: '+state.error.message);
- if(state.data){$('gold').textContent=Number(state.data.gold||0).toLocaleString('id-ID');$('level').textContent=state.data.level||1;$('picklevel').textContent=state.data.pickaxe_level||1}
- if(profile.data?.username)$('player').textContent=profile.data.username;
- if(inv.error){$('inventory').innerHTML='<div class="hint">Tas belum dapat dimuat: '+inv.error.message+'</div>';return}
- $('inventory').innerHTML=(inv.data||[]).length?inv.data.map(x=>'<div class="item"><span>'+((x.golden_item_catalog&&x.golden_item_catalog.name)||x.item_code)+'</span><b>× '+x.quantity+'</b></div>').join(''):'<div class="hint">Tas masih kosong. Mulai menambang!</div>';
-}
-async function action(rpc){
- if(busy||!client)return;busy=true;['mine','sell','upgrade'].forEach(id=>$(id).disabled=true);
- message('gamemsg','Sedang memproses...');
- const {data,error}=await client.rpc(rpc);
- if(error)message('gamemsg','Aksi gagal: '+error.message);
- else message('gamemsg',typeof data==='string'?data:'Berhasil!');
- await refresh();busy=false;['mine','sell','upgrade'].forEach(id=>$(id).disabled=false);
-}
-$('startBtn').onclick=()=>showScreen('authScreen');
-$('backBtn').onclick=()=>showScreen('splash');
-$('authBack').onclick=()=>showScreen('titleScreen');
-$('signup').onclick=()=>authAction('signup');$('login').onclick=()=>authAction('login');
-$('mine').onclick=()=>action('golden_mine');$('sell').onclick=()=>action('golden_sell_all');$('upgrade').onclick=()=>action('golden_upgrade_pickaxe');
-$('logout').onclick=async()=>{await client.auth.signOut();showScreen('titleScreen')};
-setTimeout(()=>{if(!$('splash').classList.contains('hidden'))showScreen('titleScreen')},2800);
-(async()=>{if(!client){message('authmsg','Konfigurasi Supabase belum terbaca.');return}const {data}=await client.auth.getSession();if(data.session)await enterGame(data.session.user)})();
-</script>
-</body>
-</html>
+const cfg=window.GOLDEN_CONFIG||{},client=window.supabase&&cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null,$=id=>document.getElementById(id);
+function screen(id){['splash','menu','auth','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.opacity=0,1500)}
+let user=null,busy=false,inv=[],gold=0,level=1,pick=1;
+async function auth(kind){if(!client){$('authmsg').textContent='Konfigurasi Supabase tidak tersedia';return}let email=$('email').value.trim(),password=$('password').value;if(!email||password.length<6){$('authmsg').textContent='Isi email dan password minimal 6 karakter';return}$('authmsg').textContent='Menghubungkan...';let r=kind==='signup'?await client.auth.signUp({email,password}):await client.auth.signInWithPassword({email,password});if(r.error){$('authmsg').textContent=r.error.message;return}if(!r.data.session){$('authmsg').textContent='Pendaftaran berhasil. Verifikasi email jika diminta, lalu masuk.';return}await enter(r.data.user)}
+async function enter(u){user=u;let raw=(u.email||'miner').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20),username=raw.length>=3?raw:'miner'+u.id.slice(0,5);let r=await client.rpc('golden_start',{p_username:username});if(r.error){$('authmsg').textContent=r.error.message;return}screen('game');$('player').textContent=username;await refresh();startGame();requestLandscape()}
+async function refresh(){if(!client||!user)return;let [s,i,p]=await Promise.all([client.from('golden_player_state').select('*').eq('user_id',user.id).maybeSingle(),client.from('golden_inventory').select('item_code,quantity,golden_item_catalog(name,rarity)').eq('user_id',user.id),client.from('golden_profiles').select('username').eq('user_id',user.id).maybeSingle()]);if(s.data){gold=s.data.gold||0;level=s.data.level||1;pick=s.data.pickaxe_level||1;$('gold').textContent=gold.toLocaleString('id-ID');$('level').textContent=level;$('picklevel').textContent=pick}inv=i.data||[];$('bagitems').innerHTML=inv.length?inv.map(x=>'<div class="bagitem"><span>'+((x.golden_item_catalog&&x.golden_item_catalog.name)||x.item_code)+'</span><b>×'+x.quantity+'</b></div>').join(''):'<span>Belum ada ore</span>';if(p.data?.username)$('player').textContent=p.data.username}
+async function rpc(name){if(busy)return;busy=true;let r=await client.rpc(name);busy=false;if(r.error)toast(r.error.message);else{toast(typeof r.data==='string'?r.data:'Berhasil!');await refresh()}}
+async function requestLandscape(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape')}catch(e){toast('Putar perangkat ke landscape untuk pengalaman terbaik')}}
+const canvas=$('world'),ctx=canvas.getContext('2d');const TILE=48,MAPW=34,MAPH=25;let W=0,H=0,camX=0,camY=0,last=0,raf=0;
+const player={x:MAPW*TILE/2,y:MAPH*TILE/2,vx:0,vy:0,dir:0,step:0,hp:100,mine:0};let keys={},joy={x:0,y:0},nodes=[],particles=[];
+function hash(x,y){let n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n)}
+function tile(x,y){if(x<1||y<1||x>=MAPW-1||y>=MAPH-1)return 1;let edge=Math.min(x,y,MAPW-1-x,MAPH-1-y);if(edge===1)return 1;let h=hash(x,y);return h>.91?2:0}
+function makeWorld(){nodes=[];let types=[['🟤','Copper Ore','#c77b4d'],['⚙️','Iron Ore','#b9c5d4'],['🟡','Gold Ore','#ffd45f'],['💎','Crystal','#68ddff']];for(let y=3;y<MAPH-3;y++)for(let x=3;x<MAPW-3;x++){if(Math.hypot(x*TILE+24-player.x,y*TILE+24-player.y)<150)continue;let h=hash(x*3,y*7);if(h>.91){let t=h>.988?3:h>.97?2:h>.94?1:0;nodes.push({x:x*TILE+24,y:y*TILE+24,type:t,icon:types[t][0],name:types[t][1],color:types[t][2],hp:1,phase:Math.random()*6})}}}
+function resize(){let d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*d);canvas.height=Math.floor(H*d);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',resize);resize();
+function drawTile(x,y,sx,sy,t){let h=hash(x,y);ctx.fillStyle=t===1?'#303b4a':t===2?'#35423e':h>.55?'#263b3b':'#293e3d';ctx.fillRect(sx,sy,TILE+1,TILE+1);ctx.fillStyle=t===1?'#596575':'#38504a';ctx.globalAlpha=.4;ctx.fillRect(sx+4+(h*20),sy+6,3,3);ctx.fillRect(sx+28,sy+27+(h*8),5,3);ctx.globalAlpha=1;if(t===1){ctx.fillStyle='#718095';ctx.fillRect(sx+5,sy+7,35,5);ctx.fillStyle='#1a2631';ctx.fillRect(sx+9,sy+15,28,23)}}
+function drawPlayer(x,y){ctx.save();ctx.translate(x,y);ctx.fillStyle='#0008';ctx.beginPath();ctx.ellipse(0,13,13,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b96f39';ctx.fillRect(-10,-12,20,25);ctx.fillStyle='#f2c18a';ctx.beginPath();ctx.arc(0,-14,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e7bb48';ctx.fillRect(-10,-23,20,6);ctx.fillStyle='#fff';ctx.fillRect(player.dir===1?3:-6,-16,3,3);ctx.fillStyle='#536c91';ctx.fillRect(-9,5,7,10);ctx.fillRect(2,5,7,10);if(Math.abs(player.vx)+Math.abs(player.vy)>.1){let a=Math.sin(player.step*12)*3;ctx.fillStyle='#d6a05a';ctx.fillRect(-11,7+a,7,8);ctx.fillRect(4,7-a,7,8)}ctx.restore()}
+function frame(t){let dt=Math.min((t-last)/1000||0,.04);last=t;let dx=joy.x+(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0),dy=joy.y+(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0),len=Math.hypot(dx,dy);if(len>1){dx/=len;dy/=len}let speed=155;player.vx=dx*speed;player.vy=dy*speed;let nx=player.x+player.vx*dt,ny=player.y+player.vy*dt;if(!blocked(nx,player.y))player.x=nx;if(!blocked(player.x,ny))player.y=ny;if(len){player.step+=dt*9;player.dir=dx<0?1:0}camX=Math.max(0,Math.min(MAPW*TILE-W,(player.x-W/2)));camY=Math.max(0,Math.min(MAPH*TILE-H,(player.y-H/2)));
+ctx.clearRect(0,0,W,H);let sx0=Math.floor(camX/TILE),sy0=Math.floor(camY/TILE),sx1=Math.ceil((camX+W)/TILE),sy1=Math.ceil((camY+H)/TILE);for(let y=sy0;y<=sy1;y++)for(let x=sx0;x<=sx1;x++)drawTile(x,y,x*TILE-camX,y*TILE-camY,tile(x,y));
+for(let n of nodes){let x=n.x-camX,y=n.y-camY;if(x<-40||y<-40||x>W+40||y>H+40)continue;let pulse=1+Math.sin(t/330+n.phase)*.08;ctx.save();ctx.translate(x,y);ctx.scale(pulse,pulse);ctx.fillStyle='#0008';ctx.beginPath();ctx.ellipse(0,12,17,7,0,0,Math.PI*2);ctx.fill();ctx.shadowColor=n.color;ctx.shadowBlur=12;ctx.font='27px system-ui';ctx.textAlign='center';ctx.fillText(n.icon,0,7);ctx.shadowBlur=0;ctx.restore();if(Math.hypot(n.x-player.x,n.y-player.y)<76){ctx.strokeStyle='#ffe08a';ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(x,y,25,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}}
+drawPlayer(player.x-camX,player.y-camY);for(let p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x-camX,p.y-camY,4,4)}particles=particles.filter(p=>p.life>0);ctx.globalAlpha=1;raf=requestAnimationFrame(frame)}
+function blocked(x,y){let r=12;return tile(Math.floor((x-r)/TILE),Math.floor((y-r)/TILE))===1||tile(Math.floor((x+r)/TILE),Math.floor((y+r)/TILE))===1||tile(Math.floor(x/TILE),Math.floor((y-r)/TILE))===1||tile(Math.floor(x/TILE),Math.floor((y+r)/TILE))===1}
+function startGame(){cancelAnimationFrame(raf);makeWorld();resize();last=performance.now();raf=requestAnimationFrame(frame)}
+function mineNearby(){let n=nodes.filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<82).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];if(!n){toast('Dekati batu mineral dahulu!');return}if(busy)return;busy=true;toast('⛏️ Menambang '+n.name+'...');let count=0;let pulse=setInterval(()=>{for(let i=0;i<7;i++)particles.push({x:n.x+(Math.random()-.5)*24,y:n.y+(Math.random()-.5)*24,vx:(Math.random()-.5)*75,vy:(Math.random()-.5)*75,life:.5,color:n.color});count++;if(count>=4){clearInterval(pulse);nodes=nodes.filter(x=>x!==n);client.rpc('golden_mine').then(async r=>{busy=false;if(r.error)toast('Server: '+r.error.message);else toast('Mineral berhasil ditambang!');await refresh()})}},180)}
+let pad=$('pad'),stick=$('stick'),drag=false;pad.addEventListener('pointerdown',e=>{drag=true;pad.setPointerCapture(e.pointerId);moveJoy(e)});pad.addEventListener('pointermove',e=>{if(drag)moveJoy(e)});function moveJoy(e){let r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,m=Math.min(39,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);joy.x=Math.cos(a)*m/39;joy.y=Math.sin(a)*m/39;stick.style.transform='translate('+joy.x*39+'px,'+joy.y*39+'px)'}function stopJoy(){drag=false;joy.x=joy.y=0;stick.style.transform='translate(0,0)'}pad.addEventListener('pointerup',stopJoy);pad.addEventListener('pointercancel',stopJoy);addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' '||e.key==='e')mineNearby()});addEventListener('keyup',e=>keys[e.key]=false);$('mine').onclick=mineNearby;
+$('play').onclick=()=>screen('auth');$('intro').onclick=()=>screen('splash');$('authback').onclick=()=>screen('menu');$('signup').onclick=()=>auth('signup');$('login').onclick=()=>auth('login');$('sell').onclick=()=>rpc('golden_sell_all');$('upgrade').onclick=()=>rpc('golden_upgrade_pickaxe');$('logout').onclick=async()=>{cancelAnimationFrame(raf);await client.auth.signOut();screen('menu')};
+setTimeout(()=>screen('menu'),2700);(async()=>{if(!client){$('authmsg').textContent='Konfigurasi Supabase belum terbaca';return}let s=await client.auth.getSession();if(s.data.session)await enter(s.data.session.user)})();
+</script></body></html>
