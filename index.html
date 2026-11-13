@@ -51,7 +51,7 @@ async function refresh(){
  const {data:userData}=await client.auth.getUser();if(!userData.user)return;
  const [state,inv,profile]=await Promise.all([
  client.from('golden_player_state').select('*').eq('user_id',userData.user.id).maybeSingle(),
- client.from('golden_inventory').select('item_id,quantity,golden_item_catalog(name,rarity)').eq('user_id',userData.user.id),
+ client.from('golden_inventory').select('item_code,quantity,golden_item_catalog(name,rarity)').eq('user_id',userData.user.id),
  client.from('golden_profiles').select('username').eq('user_id',userData.user.id).maybeSingle()
  ]);
  if(state.data){$('gold').textContent=Number(state.data.gold||0).toLocaleString('id-ID');$('level').textContent=state.data.level||1;$('picklevel').textContent=state.data.pickaxe_level||1}
