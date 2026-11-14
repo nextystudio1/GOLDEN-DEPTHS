@@ -88,7 +88,9 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
 
   await page.locator('#mine').click();
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
-  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_world_save_chunk'))).toBeTruthy({ timeout: 5000 });
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBeGreaterThan(0);
+  await page.evaluate(() => window.__GD_TEST__.flushChunks());
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_world_save_chunk'))).toBeTruthy();
   const saved = await page.evaluate(() => window.__SUPABASE_CALLS.find(x => x.name === 'golden_world_save_chunk'));
   expect(saved.args.p_tiles).toHaveLength(32);
   expect(saved.args.p_tiles.every(row => row.length === 32)).toBeTruthy();
