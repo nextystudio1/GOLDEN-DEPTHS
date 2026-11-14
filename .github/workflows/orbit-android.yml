@@ -101,7 +101,7 @@ jobs:
                   super.onWindowFocusChanged(hasFocus);
                   if (hasFocus) hideSystemBars();
               }
-              @Override protected void onResume() {
+              @Override public void onResume() {
                   super.onResume();
                   hideSystemBars();
               }
