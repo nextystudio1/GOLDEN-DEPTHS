@@ -37,6 +37,10 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
 
   await page.locator('#mine').click();
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before.tiles);
+  await page.locator('#mapToggle').click();
+  await expect(page.locator('#mapPanel')).toBeVisible();
+  expect(await page.locator('#worldMap').evaluate(el => ({width:el.width,height:el.height}))).toEqual({width:360,height:120});
+  await expect(page.locator('#mapDot')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
