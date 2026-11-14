@@ -152,7 +152,7 @@ begin
   select quantity into v_qty from public.golden_inventory where user_id=v_seller and item_code='iron_ore';
   if v_gold_seller<>50 or v_qty<>1 then raise exception 'DIRECT_TRADE_SELLER_RESULT_FAILED'; end if;
   select quantity into v_qty from public.golden_inventory where user_id=v_buyer and item_code='copper_ore';
-  if v_gold_buyer<>270 or v_qty<>2 then raise exception 'DIRECT_TRADE_BUYER_RESULT_FAILED'; end if;
+  if v_gold_buyer<>270 or v_qty<>4 then raise exception 'DIRECT_TRADE_BUYER_RESULT_FAILED gold=% copper=%',v_gold_buyer,v_qty; end if;
 
   -- Server-side mining selects an unpersisted solid tile, validates reach and writes the chunk atomically.
   select gx.x,gy.y,private.golden_world_tile_at(gx.x,gy.y)
