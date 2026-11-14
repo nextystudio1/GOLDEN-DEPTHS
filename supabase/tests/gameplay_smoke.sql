@@ -78,6 +78,8 @@ begin
   v_result:=public.golden_player_position_save(180,20);
   select world_x,world_y into v_world_x,v_world_y from public.golden_player_state where user_id=v_buyer;
   if v_world_x<>180 or v_world_y<>20 then raise exception 'PLAYER_POSITION_SAVE_TEST_FAILED'; end if;
+  v_result:=public.golden_start('gdsmoke');
+  if (v_result->>'world_x')::integer<>180 or (v_result->>'world_y')::integer<>20 then raise exception 'PLAYER_POSITION_RESTORE_TEST_FAILED'; end if;
 
   -- 32x32 chunk save, optimistic revision conflict, and player presence upsert.
   select jsonb_agg(row_data order by y) into v_tiles
