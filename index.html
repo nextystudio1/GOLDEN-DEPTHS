@@ -169,7 +169,7 @@ $('playerActionClose').onclick=()=>$('playerAction').classList.add('hidden');$('
 $('accountToggle').onclick=()=>{$('accountEmail').textContent=user?.email||'Mode tamu — progres tersimpan di perangkat ini';$('accountDeleteOpen').style.display=user&&!guestMode?'block':'none';$('accountPanel').classList.remove('hidden');$('accountDeletePanel').classList.add('hidden')};
 $('accountPanelClose').onclick=()=>$('accountPanel').classList.add('hidden');
 $('accountDeleteOpen').onclick=()=>{$('accountPanel').classList.add('hidden');$('deleteAccountWord').value='';$('deleteAccountMsg').textContent='';$('accountDeletePanel').classList.remove('hidden')};
-$('accountDeleteCancel').onclick=()=>$('accountDeletePanel').classList.add('hidden');
+$('deleteAccountCancel').onclick=()=>$('accountDeletePanel').classList.add('hidden');
 $('deleteAccountDo').onclick=async()=>{
  if(!sb||!user||guestMode){$('deleteAccountMsg').textContent='Masuk ke akun online terlebih dahulu.';return}
  if($('deleteAccountWord').value.trim().toUpperCase()!=='HAPUS'){$('deleteAccountMsg').textContent='Ketik HAPUS dengan benar untuk melanjutkan.';return}
