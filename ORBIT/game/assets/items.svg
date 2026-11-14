@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="grassTop" x2="0" y2="1"><stop stop-color="#c9f99a"/><stop offset="1" stop-color="#62b85e"/></linearGradient>
+ <linearGradient id="soil" x2="1" y2="1"><stop stop-color="#d9ad7b"/><stop offset="1" stop-color="#8a583b"/></linearGradient>
+ <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#d4e0e5"/><stop offset="1" stop-color="#657e8c"/></linearGradient>
+ <linearGradient id="copper" x2="1" y2="1"><stop stop-color="#ffd29a"/><stop offset="1" stop-color="#a84d32"/></linearGradient>
+ <linearGradient id="crystal" x2="1" y2="1"><stop stop-color="#e5ffff"/><stop offset=".45" stop-color="#6ce8df"/><stop offset="1" stop-color="#2878a7"/></linearGradient>
+ <linearGradient id="wood" x2="1" y2="1"><stop stop-color="#f3c989"/><stop offset="1" stop-color="#85502d"/></linearGradient>
+</defs>
+<symbol id="grass" viewBox="0 0 32 32"><path d="M3 9 16 3l13 6v17l-13 4L3 26Z" fill="#315b43" stroke="#173d32" stroke-width="1.5"/><path d="M3 9 16 3l13 6-13 7Z" fill="url(#grassTop)"/><path d="m3 9 13 7v15L3 26Z" fill="#8c6847"/><path d="m16 16 13-7v17l-13 5Z" fill="#5e8b50"/><path d="m7 9 4-2 3 2-4 2Z" fill="#efffc2"/></symbol>
+<symbol id="dirt" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="url(#soil)" stroke="#65452f" stroke-width="1.5"/><path d="m3 9 13 7 13-7-13-6Z" fill="#c99565"/><path d="m8 13 3 1m7 5 4-2m-11 5 3-1m7 4 3-1" stroke="#f1c58c" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="stone" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="url(#stone)" stroke="#405867" stroke-width="1.5"/><path d="m3 9 13 7 13-7-13-6Z" fill="#dce9ed"/><path d="m8 11 4-2 2 2-4 2Zm9 8 4-2 3 2-4 2Zm-6 4 3-1 2 2-4 1Z" fill="#728d9b"/></symbol>
+<symbol id="copper" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="#563c3c" stroke="#382c34" stroke-width="1.5"/><path d="m6 10 10-5 10 5-10 5Z" fill="#77534a"/><path d="m9 12 7-4 7 4-7 4Z" fill="url(#copper)"/><path d="m11 12 5-3 3 2-5 3Z" fill="#fff0bf"/><path d="m8 20 4-2 3 2-4 2Zm10 4 4-2 3 2-4 2Z" fill="#c8784e"/></symbol>
+<symbol id="crystal" viewBox="0 0 32 32"><path d="m16 2 11 11-5 16H10L5 13Z" fill="#1d6b91" stroke="#b8fff3" stroke-width="1.5"/><path d="m16 4 7 9-7 12-6-12Z" fill="url(#crystal)"/><path d="m16 4 0 21 7-12Z" fill="#42b9cb"/><path d="m12 12 4-6 2 7-3 5Z" fill="#efffff" opacity=".9"/></symbol>
+<symbol id="wood" viewBox="0 0 32 32"><path d="m5 7 18-4 5 5-2 20-18 2-5-5Z" fill="#563827" stroke="#30251f" stroke-width="1.5"/><path d="m8 8 14-3 3 3-2 17-13 3-3-3Z" fill="url(#wood)"/><path d="m11 9 3-1-1 17-3 1Zm8-2 2-1-1 18-2 1Z" fill="#f5d8a3"/></symbol>
+<symbol id="seed" viewBox="0 0 32 32"><path d="M16 28V15" stroke="#6c9e4c" stroke-width="3" stroke-linecap="round"/><path d="M16 18C5 18 4 9 5 6c8-1 13 3 11 12Z" fill="#7bd66d" stroke="#d9ffc0" stroke-width="1.5"/><path d="M16 16C16 7 23 3 28 5c1 8-3 13-12 11Z" fill="#3cae78" stroke="#b8f5a1" stroke-width="1.5"/><path d="M16 27h9" stroke="#c5a06b" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="pickaxe" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="M4 10c6-7 17-8 24-2l-2 4c-6-3-12-2-18 2Z" fill="#c5d5da" stroke="#58717d" stroke-width="1.5"/><path d="m5 10 7-4 1 3-6 4Z" fill="#f5e4bd"/></symbol>
+<symbol id="stonepick" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="M4 10 10 4l6 1 4-2 8 5-5 5-7-3-7 4Z" fill="#91a4ad" stroke="#405765" stroke-width="1.5"/><path d="m7 9 4-3 4 1-4 3Z" fill="#e3edf0"/></symbol>
+<symbol id="crystalpick" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="m4 10 8-8 5 4 6-2 5 7-8 4-5-4-7 3Z" fill="url(#crystal)" stroke="#c7fff7" stroke-width="1.5"/><path d="m11 6 4-3 2 4-3 4Z" fill="#f2ffff"/></symbol>
+</svg>
