@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - 'android/**'
+      - 'index.html'
+      - 'config.js'
+      - 'assets/**'
       - '.github/workflows/android-apk.yml'
 
 permissions:
@@ -33,6 +36,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Bundle complete game into Android assets
+        run: |
+          mkdir -p android/app/src/main/assets/game/assets
+          cp index.html config.js android/app/src/main/assets/game/
+          cp assets/*.svg android/app/src/main/assets/game/assets/
       - name: Build debug APK
         working-directory: android
         run: gradle --no-daemon assembleDebug
