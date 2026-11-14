@@ -23,3 +23,10 @@ jobs:
         run: node scripts/smoke-test.mjs
       - name: Run gameplay browser test
         run: npm test
+      - name: Upload gameplay test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplay-test-evidence
+          path: test-results/
+          if-no-files-found: ignore
