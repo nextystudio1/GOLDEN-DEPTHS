@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+async function enterWorldFromLobby(page) {
+  await expect(page.locator('#lobby')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#worldRoomList button').first()).toBeVisible({ timeout: 10000 });
+  await page.locator('#worldRoomList button').first().click();
+  await expect(page.locator('#game')).toBeVisible({ timeout: 10000 });
+}
+
 async function holdMineBlock(page, holdMs = 1500) {
   const setup = await page.evaluate(() => {
     let block = window.__GD_TEST__.findReachableBlock();
@@ -39,7 +46,7 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   await page.locator('#play').click();
   await expect(page.locator('#auth')).toBeVisible();
   await page.locator('#guest').click();
-  await expect(page.locator('#game')).toBeVisible();
+  await enterWorldFromLobby(page);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.worldTiles() || 0)).toBeGreaterThan(1000);
   expect(await page.evaluate(() => window.__GD_TEST__.worldSize())).toEqual({ width: 360, height: 120 });
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.assets?.() || {tiles:false,miner:false})).toEqual({tiles:true,miner:true});
@@ -119,7 +126,7 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_start'))).toBeTruthy();
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_presence_update'))).toBeTruthy();
   const restored = await page.evaluate(() => window.__GD_TEST__.player());
@@ -220,6 +227,7 @@ test('guest can open the live world events panel', async ({ page }) => {
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
   await page.locator('#eventToggle').click();
   await expect(page.locator('#events')).toBeVisible();
   await expect(page.locator('#eventList')).toContainText('Crystal Rush');
@@ -436,6 +444,7 @@ test('landscape play controls move the player and remain on screen', async ({ pa
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
   const controls = await Promise.all(['#left','#right','#jump','#hotbar'].map(sel => page.locator(sel).boundingBox()));
   for (const rect of controls) {
     expect(rect).not.toBeNull();
@@ -464,9 +473,10 @@ test('guest pickaxe shop displays price and applies an upgrade', async ({ page }
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
   await page.locator('#upgrade').click();
   await expect(page.locator('#shop')).toBeVisible();
-  await expect(page.locator('#shopPickCost')).toHaveText('180 Gold');
+  await expect(page.locator('#shopPickCost')).toHaveText('180 AURUM');
   await page.locator('#buyUpgrade').click();
   await expect(page.locator('#pick')).toHaveText('2');
   await expect(page.locator('#gold')).toHaveText('820');
@@ -524,6 +534,7 @@ test('touching and holding a block mines that exact block directly', async ({ pa
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
   const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
   expect(target).not.toBeNull();
   const before = await page.evaluate(() => window.__GD_TEST__.worldTiles());
