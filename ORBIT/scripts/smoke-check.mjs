@@ -8,6 +8,7 @@ const manifest = JSON.parse(fs.readFileSync('game/manifest.webmanifest', 'utf8')
 const itemAssets = fs.readFileSync('game/assets/items.svg', 'utf8');
 const serviceWorker = fs.readFileSync('game/sw.js', 'utf8');
 const workflow = fs.readFileSync('../.github/workflows/orbit-android.yml', 'utf8');
+const releaseWorkflow = fs.readFileSync('../.github/workflows/orbit-release.yml', 'utf8');
 
 const requiredIds = [
   'game-shell', 'menu-button', 'side-menu', 'drawer-scrim',
@@ -90,5 +91,11 @@ assert.equal(manifest.orientation, 'landscape', 'Game must request landscape ori
 assert.equal(manifest.display, 'fullscreen', 'Web app must request fullscreen display');
 assert.ok(workflow.includes('ORBIT_IMMERSIVE_FULLSCREEN'), 'Android immersive fullscreen patch is missing');
 assert.ok(workflow.includes('assembleDebug'), 'Android debug build task is missing');
+assert.ok(releaseWorkflow.includes('ANDROID_KEYSTORE_BASE64'), 'Production signing must use the owner-provided keystore secret');
+assert.ok(releaseWorkflow.includes('ANDROID_KEYSTORE_PASSWORD') && releaseWorkflow.includes('ANDROID_KEY_ALIAS') && releaseWorkflow.includes('ANDROID_KEY_PASSWORD'), 'All production signing secrets must be validated');
+assert.ok(releaseWorkflow.includes('assembleRelease bundleRelease'), 'Production workflow must build both signed APK and Play AAB');
+assert.ok(releaseWorkflow.includes('apksigner') && releaseWorkflow.includes('jarsigner'), 'Production APK and AAB signatures must be verified');
+assert.ok(releaseWorkflow.includes('workflow_dispatch:'), 'Production release must require an explicit manual dispatch');
+assert.ok(!releaseWorkflow.includes('keytool -genkeypair'), 'Production release must not silently generate a new signing identity');
 
 console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gameplay hooks, landscape and fullscreen build config.');
