@@ -166,7 +166,44 @@ async function syncOnlinePosition(){if(!sb||!onlineUser||!activeWorldId)return;c
 
 const oldMineAt=mineAt;mineAt=function(px,py,delta=0){if(!activeWorldId){oldMineAt(px,py,delta);return}if(onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0||tx>=WW||ty<0||ty>=WH){resetMining();return}if(!map[ty]?.[tx]||!advanceMining(tx,ty,delta))return;onlineActionBusy=true;sb.rpc('orbit_mine_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty}).then(async({data,error})=>{if(error){resetMining();toast(error.message.includes('TOO_FAR')?'Dekati blok dahulu':'Tidak bisa menambang: '+error.message);return}map[ty][tx]=0;resetMining();await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
 const oldPlaceAt=placeAt;placeAt=function(px,py){if(!activeWorldId){oldPlaceAt(px,py);return}if(onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T),items=['grass_block','soil_block','slate_block'];if(selected>2){toast('Item ini belum bisa dipasang');return}onlineActionBusy=true;sb.rpc('orbit_place_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty,p_item_id:items[selected]}).then(async({data,error})=>{if(error){toast(error.message.includes('TOO_FAR')?'Dekati lokasi dahulu':'Tidak bisa memasang: '+error.message);return}map[ty][tx]=data.tile_id;await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
-const oldOpenPanel=openPanel;openPanel=function(name){if(name!=='worlds'&&name!=='social')return oldOpenPanel(name);const modal=$('#modal'),title=$('#modal-title'),content=$('#modal-content');modal.classList.remove('hidden');content.replaceChildren();if(name==='social'){authPanel();return}title.textContent='🌍 World Gate';refreshWorldList(content)};
+async function refreshMarketPanel(content){
+ if(!sb||!onlineUser){addText(content,'p','Login dahulu untuk memakai market.','panel-note');return}
+ addText(content,'p','Jual dan beli item dari pemain lain. Semua pembayaran dan perpindahan item diproses oleh server.','panel-note');
+ const [itemRes,invRes,listingRes]=await Promise.all([
+  sb.from('item_catalog').select('item_id,display_name,stack_limit').eq('is_tradeable',true).order('display_name'),
+  sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id),
+  sb.from('market_listings').select('id,seller_id,item_id,quantity,unit_price,currency,created_at').eq('status','active').order('created_at',{ascending:false}).limit(40)
+ ]);
+ if(itemRes.error||invRes.error||listingRes.error){addText(content,'p','Market gagal dimuat. Periksa koneksi dan coba lagi.','panel-note');return}
+ const items=itemRes.data||[],inventory=invRes.data||[],listings=listingRes.data||[];
+ const itemNames=new Map(items.map(x=>[x.item_id,x.display_name]));
+ const profileIds=[...new Set(listings.map(x=>x.seller_id))];
+ let profiles=[];
+ if(profileIds.length){const p=await sb.from('player_profiles').select('user_id,display_name').in('user_id',profileIds);profiles=p.data||[]}
+ const profileNames=new Map(profiles.map(x=>[x.user_id,x.display_name]));
+ addText(content,'p','📦 Pasang penjualan','panel-note');
+ const select=document.createElement('select');select.className='world-input';
+ const available=inventory.filter(x=>x.quantity>0&&itemNames.has(x.item_id));
+ available.forEach(x=>{const o=document.createElement('option');o.value=x.item_id;o.textContent=(itemNames.get(x.item_id)||x.item_id)+' • '+x.quantity+' tersedia';select.append(o)});
+ if(!available.length){const o=document.createElement('option');o.textContent='Belum ada item yang bisa dijual';select.append(o)}
+ const qty=document.createElement('input');qty.className='world-input';qty.type='number';qty.min='1';qty.max='9999';qty.value='1';qty.placeholder='Jumlah item';
+ const price=document.createElement('input');price.className='world-input';price.type='number';price.min='1';price.max='1000000000';price.value='10';price.placeholder='Harga per item';
+ const currency=document.createElement('select');currency.className='world-input';[['coins','Coins'],['gems','Gems']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;currency.append(o)});
+ const create=addText(content,'button','PASANG LISTING');create.className='primary';create.disabled=!available.length;
+ create.onclick=async()=>{const q=Number(qty.value),p=Number(price.value);if(!Number.isInteger(q)||q<1||!Number.isSafeInteger(p)||p<1){toast('Jumlah dan harga harus valid');return}create.disabled=true;const {error}=await sb.rpc('orbit_create_listing',{p_item_id:select.value,p_quantity:q,p_unit_price:p,p_currency:currency.value});create.disabled=false;if(error){toast(error.message.includes('INSUFFICIENT_ITEMS')?'Jumlah item tidak cukup':'Gagal memasang: '+error.message);return}toast('Listing berhasil dipasang');await syncOnlineInventory();openPanel('market')};
+ content.append(select,qty,price,currency,create);
+ addText(content,'p','🛒 Listing aktif','panel-note');
+ if(!listings.length)addText(content,'p','Belum ada penjualan aktif.','panel-note');
+ listings.forEach(listing=>{
+  const row=document.createElement('div');row.className='panel-row';
+  const label=document.createElement('span');label.textContent=(itemNames.get(listing.item_id)||listing.item_id)+' ×'+listing.quantity+' • '+listing.unit_price+' '+listing.currency+' / item • '+(profileNames.get(listing.seller_id)||'Explorer');
+  const action=addText(row,'button',listing.seller_id===onlineUser.id?'BATAL':'BELI');
+  action.disabled=listing.seller_id===onlineUser.id?false:false;
+  action.onclick=async()=>{action.disabled=true;const {error}=await sb.rpc(listing.seller_id===onlineUser.id?'orbit_cancel_listing':'orbit_buy_listing',listing.seller_id===onlineUser.id?{p_listing_id:listing.id}:{p_listing_id:listing.id});action.disabled=false;if(error){const msg=error.message;toast(msg.includes('INSUFFICIENT_FUNDS')?'Saldo tidak cukup':msg.includes('INVENTORY_LIMIT')?'Kapasitas inventaris tidak cukup':msg.includes('LISTING_UNAVAILABLE')?'Listing sudah tidak tersedia':'Transaksi gagal: '+msg);return}toast(listing.seller_id===onlineUser.id?'Listing dibatalkan':'Pembelian berhasil');await syncOnlineInventory();await loadProfile();openPanel('market')};
+  row.prepend(label);content.append(row);
+ });
+}
+const oldOpenPanel=openPanel;openPanel=function(name){if(name!=='worlds'&&name!=='social'&&name!=='market')return oldOpenPanel(name);const modal=$('#modal'),title=$('#modal-title'),content=$('#modal-content');modal.classList.remove('hidden');content.replaceChildren();if(name==='social'){authPanel();return}if(name==='market'){title.textContent='🏪 ORBIT Market';refreshMarketPanel(content);return}title.textContent='🌍 World Gate';refreshWorldList(content)};
 if(window.supabase&&cfg?.supabaseUrl&&cfg?.supabaseKey){sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);sb.auth.getSession().then(async({data,error})=>{if(error){toast('Online belum tersambung');return}onlineUser=data.session?.user||null;setAccountLabel();if(onlineUser)await loadProfile()}).catch(()=>toast('Gagal menyambung ke server'));sb.auth.onAuthStateChange(async(_event,session)=>{onlineUser=session?.user||null;setAccountLabel();if(onlineUser)await loadProfile();else{activeWorldId=null;if(worldChannel){sb.removeChannel(worldChannel);worldChannel=null}}})}
 
 })();
