@@ -46,13 +46,21 @@ jobs:
       - name: Build debug and release variants
         working-directory: android
         run: gradle --no-daemon assembleDebug assembleRelease
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-depths-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
       - name: Smoke test APK in Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 30
           target: google_apis
           arch: x86_64
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n com.nextystudio.goldendepths/.MainActivity
@@ -71,10 +79,3 @@ jobs:
           path: golden-depths-smoke.png
           if-no-files-found: error
           retention-days: 14
-      - name: Upload installable APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: golden-depths-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 30
