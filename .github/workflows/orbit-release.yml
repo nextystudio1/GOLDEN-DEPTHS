@@ -94,7 +94,7 @@ jobs:
           import os, re
           manifest = Path('android/app/src/main/AndroidManifest.xml')
           text = manifest.read_text()
-          text = re.sub(r'(android:name="\\.MainActivity")', r'\1 android:screenOrientation="landscape"', text, count=1) if 'android:screenOrientation="landscape"' not in text else text
+          text = re.sub(r'(android:name="\.MainActivity")', r'\1 android:screenOrientation="landscape"', text, count=1) if 'android:screenOrientation="landscape"' not in text else text
           manifest.write_text(text)
           assert 'android:screenOrientation="landscape"' in text
           candidates = list(Path('android/app/src/main').rglob('MainActivity.java'))
@@ -109,7 +109,7 @@ jobs:
           import android.view.View;
           import android.view.WindowInsets;
           import android.view.WindowInsetsController;''')
-              match = re.search(r'public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}', src)
+              match = re.search(r'public class MainActivity extends BridgeActivity\s*\{\s*\}', src)
               if not match:
                   raise SystemExit('Unexpected Capacitor MainActivity template')
               body = '''public class MainActivity extends BridgeActivity {
@@ -148,8 +148,8 @@ jobs:
               }
           '''
               src = src.replace('    buildTypes {', block + '\n    buildTypes {', 1)
-          src = re.sub(r'versionCode\\s+\\d+', 'versionCode ' + os.environ['VERSION_CODE'], src, count=1)
-          src = re.sub(r'versionName\\s+["\\'][^"\\']+["\\']', "versionName '" + os.environ['VERSION_NAME'] + "'", src, count=1)
+          src = re.sub(r'versionCode\s+\d+', 'versionCode ' + os.environ['VERSION_CODE'], src, count=1)
+          src = re.sub(r"versionName\s+['\"][^'\"]+['\"]", "versionName '" + os.environ['VERSION_NAME'] + "'", src, count=1)
           src = re.sub(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', src, count=1)
           gradle.write_text(src)
           assert 'signingConfig signingConfigs.release' in src
