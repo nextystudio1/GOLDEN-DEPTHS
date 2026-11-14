@@ -42,7 +42,7 @@ assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
 assert.ok(js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({coins,equippedTool}))"), 'Offline player progression must persist across worlds');
-assert.ok(js.includes("inv=readJSON('orbit_v2_inv',saved.inv||{})"), 'Offline inventory must be shared across worlds');
+assert.ok(js.includes("inv=sharedInv&&typeof sharedInv==='object'?sharedInv:(saved.inv||{})"), 'Saved offline worlds must load shared player inventory');
 assert.ok(js.includes("if(sharedInv&&typeof sharedInv==='object')inv=sharedInv"), 'New offline worlds must inherit the shared player inventory');
 assert.ok(js.includes('function save(showToast=false)'), 'Background saves must not spam toast notifications');
 assert.ok(js.includes('b.onclick=()=>save(true)'), 'Manual save must still confirm success');
