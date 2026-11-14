@@ -90,10 +90,10 @@ function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content
    if(activeWorldId&&onlineUser){
     const {data,error}=await sb.rpc('orbit_craft_item',{p_recipe_id:recipe.id});
     btn.disabled=false;
-    if(error){toast(error.message.includes('MATERIALS_MISSING')?'Material belum cukup':'Craft gagal: '+error.message);return}
+    if(error){toast(error.message.includes('MATERIALS_MISSING')?'Material belum cukup':error.message.includes('OUTPUT_STACK_LIMIT')?'Kapasitas item sudah penuh':'Craft gagal: '+error.message);return}
     await syncOnlineInventory();toast('Berhasil membuat '+(recipe.output==='seed'?'Glow Seed':'Copper Pickaxe'));openPanel('craft');return;
    }
-   const enough=recipe.inputs.every(([id,n])=>(inv[id]||0)>=n);
+   const outputItem=getItem(recipe.output);if((inv[recipe.output]||0)+recipe.amount>(outputItem?.stack||999)){btn.disabled=false;toast('Kapasitas item sudah penuh');return}const enough=recipe.inputs.every(([id,n])=>(inv[id]||0)>=n);
    if(!enough){btn.disabled=false;toast('Material belum cukup');return}
    recipe.inputs.forEach(([id,n])=>{inv[id]-=n});
    addItem(recipe.output,recipe.amount);save();btn.disabled=false;toast('Craft berhasil');openPanel('craft');
