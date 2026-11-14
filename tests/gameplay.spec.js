@@ -182,3 +182,53 @@ test('guest can open the live world events panel', async ({ page }) => {
   await expect(page.locator('#eventList')).toContainText('Crystal Rush');
   await expect(page.locator('#eventList')).toContainText('Peluang Crystal Shard meningkat.');
 });
+
+
+test('online trade panel loads offers and calls the accept RPC', async ({ page }) => {
+  const mockClient = `
+    window.__SUPABASE_CALLS = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000125', email: 'buyer@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__SUPABASE_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 1000, level: 1, pickaxe_level: 1 }, error: null };
+          return { data: { offer_id: 'offer-1', item_code: 'copper_ore', quantity: 2, gold_paid: 80 }, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; },
+            eq() { return query; },
+            order() { return query; },
+            limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: { gold: 1000, level: 1, pickaxe_level: 1 }, error: null }); },
+            then(resolve, reject) {
+              const data = table === 'golden_trade_offers' ? [{
+                id: 'offer-1', seller_id: '00000000-0000-0000-0000-000000000999',
+                item_code: 'copper_ore', quantity: 2, gold_price: 80,
+                created_at: new Date().toISOString()
+              }] : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await page.locator('#tradeToggle').click();
+  await expect(page.locator('#tradeList')).toContainText('Copper Ore ×2');
+  await page.locator('#tradeList button').filter({ hasText: 'BELI' }).click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_trade_accept' && x.args.p_offer_id === 'offer-1'))).toBeTruthy();
+  await expect(page.locator('#toast')).toContainText('Transaksi berhasil');
+});
