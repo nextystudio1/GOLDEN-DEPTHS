@@ -182,7 +182,7 @@ test('online mining failure does not destroy or persist a block', async ({ page 
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   const before = await page.evaluate(() => window.__GD_TEST__.worldTiles());
   await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
@@ -528,6 +528,67 @@ test('online crafting calls the server recipes', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_craft' && x.args.p_recipe_code === 'stone_platform'))).toBeTruthy();
 });
 
+
+
+test('guest can choose a named biome mine before entering gameplay', async ({ page }) => {
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  await expect(page.locator('#lobby')).toBeVisible();
+  await expect(page.locator('#worldRoomList')).toContainText('Amber Quarry');
+  await page.locator('#worldRoomList button').nth(1).click();
+  await expect(page.locator('#game')).toBeVisible();
+  expect(await page.evaluate(() => window.__GD_TEST__.world())).toEqual({
+    id: 'guest_dunes', name: 'Amber Quarry', biome: 'amber'
+  });
+});
+
+test('online player can create and enter a named mine', async ({ page }) => {
+  const mockClient = `
+    window.__SUPABASE_CALLS = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000221', email: 'builder@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__SUPABASE_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 150, lumen: 0, level: 1, pickaxe_level: 1, world_x: 180, world_y: 20 }, error: null };
+          if (name === 'golden_world_list') return { data: [{ world_id: 'main', name: 'Verdant Haven', biome: 'verdant', owner: 'VELMORA', online: 1, capacity: 40 }], error: null };
+          if (name === 'golden_world_create') return { data: { world_id: 'mine_abc123def456', name: args.p_name, biome: args.p_biome }, error: null };
+          if (name === 'golden_world_join') return { data: { world_id: args.p_world_id, name: 'Moonlit Hollow', biome: 'frost' }, error: null };
+          return { data: { ok: true }, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; }, eq() { return query; }, order() { return query; }, limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: table === 'golden_player_state' ? { gold: 150, lumen: 0, level: 1, pickaxe_level: 1 } : null, error: null }); },
+            then(resolve, reject) { return Promise.resolve({ data: [], error: null }).then(resolve, reject); }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#lobby')).toBeVisible({ timeout: 8000 });
+  await page.locator('#newWorldName').fill('Moonlit Hollow');
+  await page.locator('#newWorldBiome').selectOption('frost');
+  await page.locator('#createWorld').click();
+  await expect(page.locator('#game')).toBeVisible();
+  expect(await page.evaluate(() => window.__GD_TEST__.world())).toEqual({
+    id: 'mine_abc123def456', name: 'Moonlit Hollow', biome: 'frost'
+  });
+  const calls = await page.evaluate(() => window.__SUPABASE_CALLS);
+  expect(calls.some(x => x.name === 'golden_world_create' && x.args.p_name === 'Moonlit Hollow' && x.args.p_biome === 'frost')).toBeTruthy();
+  expect(calls.some(x => x.name === 'golden_world_join' && x.args.p_world_id === 'mine_abc123def456')).toBeTruthy();
+});
 
 test('touching and holding a block mines that exact block directly', async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
