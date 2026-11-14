@@ -115,7 +115,7 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
@@ -171,7 +171,7 @@ test('online mining failure does not destroy or persist a block', async ({ page 
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
@@ -214,7 +214,7 @@ test('guest can open the live world events panel', async ({ page }) => {
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
@@ -265,7 +265,7 @@ test('nearby player can be selected and sent a direct trade request', async ({ p
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
@@ -334,7 +334,7 @@ test('incoming trade request opens the live offer and confirmation panel', async
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
@@ -430,7 +430,7 @@ test('online crafting calls the server recipes', async ({ page }) => {
       })
     };
   `;
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
