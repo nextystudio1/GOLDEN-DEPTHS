@@ -14,7 +14,7 @@ const requiredIds = [
   'world-name', 'level', 'xp', 'toast', 'coords'
 ];
 for (const id of requiredIds) {
-  assert.match(html, new RegExp('id=["\\\\']' + id + '["\\\\']'), 'Missing HTML element #' + id);
+  assert.ok(html.includes('id="' + id + '"') || html.includes("id='" + id + "'"), 'Missing HTML element #' + id);
 }
 for (const selector of [
   '#game-shell', '.topbar', '.viewport', '.game-controls',
