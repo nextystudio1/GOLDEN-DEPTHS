@@ -1,0 +1,2 @@
+// Public client configuration only. Never put service-role keys in browser code.
+window.ORBIT_CONFIG={supabaseUrl:'https://uobwzfxgziovtdtujvwr.supabase.co',supabaseKey:'sb_publishable_2q3kO8UmQzyAro7D4r4tlg_bbr6_LIt'};
