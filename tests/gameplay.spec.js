@@ -539,7 +539,7 @@ test('guest can choose a named biome mine before entering gameplay', async ({ pa
   await page.locator('#worldRoomList button').nth(1).click();
   await expect(page.locator('#game')).toBeVisible();
   expect(await page.evaluate(() => window.__GD_TEST__.world())).toEqual({
-    id: 'guest_dunes', name: 'Amber Quarry', biome: 'amber'
+    id: 'guest_dunes', name: 'Amber Quarry', biome: 'amber', seed: 10.45
   });
 });
 
@@ -556,8 +556,8 @@ test('online player can create and enter a named mine', async ({ page }) => {
           window.__SUPABASE_CALLS.push({ name, args });
           if (name === 'golden_start') return { data: { gold: 150, lumen: 0, level: 1, pickaxe_level: 1, world_x: 180, world_y: 20 }, error: null };
           if (name === 'golden_world_list') return { data: [{ world_id: 'main', name: 'Verdant Haven', biome: 'verdant', owner: 'VELMORA', online: 1, capacity: 40 }], error: null };
-          if (name === 'golden_world_create') return { data: { world_id: 'mine_abc123def456', name: args.p_name, biome: args.p_biome }, error: null };
-          if (name === 'golden_world_join') return { data: { world_id: args.p_world_id, name: 'Moonlit Hollow', biome: 'frost' }, error: null };
+          if (name === 'golden_world_create') return { data: { world_id: 'mine_abc123def456', name: args.p_name, biome: args.p_biome, seed: 4321 }, error: null };
+          if (name === 'golden_world_join') return { data: { world_id: args.p_world_id, name: 'Moonlit Hollow', biome: 'frost', seed: 4321 }, error: null };
           return { data: { ok: true }, error: null };
         },
         from: (table) => {
@@ -583,7 +583,7 @@ test('online player can create and enter a named mine', async ({ page }) => {
   await page.locator('#createWorld').click();
   await expect(page.locator('#game')).toBeVisible();
   expect(await page.evaluate(() => window.__GD_TEST__.world())).toEqual({
-    id: 'mine_abc123def456', name: 'Moonlit Hollow', biome: 'frost'
+    id: 'mine_abc123def456', name: 'Moonlit Hollow', biome: 'frost', seed: 43.21
   });
   const calls = await page.evaluate(() => window.__SUPABASE_CALLS);
   expect(calls.some(x => x.name === 'golden_world_create' && x.args.p_name === 'Moonlit Hollow' && x.args.p_biome === 'frost')).toBeTruthy();
