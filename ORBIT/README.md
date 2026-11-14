@@ -19,7 +19,7 @@ ORBIT is an original 2D side-view pixel sandbox project. It uses original game a
 
 The debug workflow is **ORBIT Android Build**. It runs JavaScript/smoke checks, generates the Capacitor Android project, applies landscape/fullscreen configuration, builds an installable debug APK, and uploads it as a GitHub Actions artifact.
 
-The latest confirmed debug build passed all workflow steps on commit `e057d397609cc8b063feeee852c306d367541f63`. Debug APKs are test builds, not Play Store releases.
+Build results must be checked in the latest **ORBIT Android Build** run on GitHub Actions. A previous successful debug run does not prove that the current commit builds. Debug APKs are test builds, not Play Store releases.
 
 ## Signed production build
 
@@ -43,7 +43,7 @@ Never commit a keystore or place its passwords in source code, issues, screensho
 - The browser client contains only the public publishable key. Never put a service-role or secret key in client files.
 - RLS is enabled on the game tables and direct client writes to protected gameplay tables are restricted.
 
-These controls are a security foundation, not a claim that the game has passed an independent penetration test or production abuse review.
+These controls are a security foundation, not a claim that the game has passed an independent penetration test or production abuse review. The latest Supabase Security Advisor check reported that leaked-password protection is disabled; enable it in Supabase Auth password-security settings before opening public registration. The performance advisor also reported 14 currently unused indexes; do not remove them automatically before collecting representative production traffic.
 
 ## Release status
 
@@ -52,9 +52,10 @@ These controls are a security foundation, not a claim that the game has passed a
 1. Install the newest APK on real Android devices, including a lower/mid-range phone; verify fullscreen, touch controls, backpack gestures, landscape rotation, performance, and resume/reconnect.
 2. Test account creation/login, world creation/joining, mining, placement, inventory, crafting, chunk claims, and multiplayer behavior with at least two independent accounts/devices.
 3. Finish privacy disclosures and a working account/data deletion process specifically for ORBIT. The older repository-root privacy and deletion pages belong to the previous game and must not be reused as if they describe ORBIT.
-4. Complete moderation/reporting, abuse/rate-limit review, server load/reconnect testing, and recovery procedures before opening public multiplayer.
-5. Configure the owner-controlled signing key and produce a verified signed APK/AAB.
-6. Prepare store listing, support contact, content rating, Data safety, privacy URL, and account deletion URL. Publishing-account requirements must be handled by an eligible account owner/guardian where applicable.
+4. Expand and validate the item catalog and the gameplay loops that depend on it; the latest database audit showed only 11 catalog entries, so the broad sandbox item/economy scope is not yet complete.
+5. Complete moderation/reporting, abuse/rate-limit review, server load/reconnect testing, and recovery procedures before opening public multiplayer.
+6. Configure the owner-controlled signing key and produce a verified signed APK/AAB.
+7. Prepare store listing, support contact, content rating, Data safety, privacy URL, and account deletion URL. Publishing-account requirements must be handled by an eligible account owner/guardian where applicable.
 
 ## Intellectual property
 
