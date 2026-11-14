@@ -1,0 +1,7 @@
+{
+  "appId": "com.nextystudio.orbit",
+  "appName": "ORBIT",
+  "webDir": "game",
+  "backgroundColor": "#101d30",
+  "androidScheme": "https"
+}
