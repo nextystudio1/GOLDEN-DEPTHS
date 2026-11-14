@@ -11,14 +11,16 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.webkit.WebViewAssetLoader;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.graphics.Color;
 
 public class MainActivity extends Activity {
-    private static final String GAME_URL = "file:///android_asset/game/index.html";
+    private static final String GAME_URL = "https://appassets.androidplatform.net/game/index.html";
     private WebView webView;
     private TextView loading;
+    private WebViewAssetLoader assetLoader;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -27,7 +29,11 @@ public class MainActivity extends Activity {
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(12, 20, 32));
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/game/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
         webView = new WebView(this);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setBackgroundColor(Color.rgb(12, 20, 32));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -39,9 +45,11 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) settings.setOffscreenPreRaster(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false);
@@ -50,6 +58,10 @@ public class MainActivity extends Activity {
         }
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                android.webkit.WebResourceResponse response = assetLoader.shouldInterceptRequest(request.getUrl());
+                return response != null ? response : super.shouldInterceptRequest(view, request);
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String scheme = request.getUrl().getScheme();
                 return !("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme));
