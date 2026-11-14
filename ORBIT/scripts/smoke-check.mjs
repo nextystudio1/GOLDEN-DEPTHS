@@ -41,6 +41,8 @@ assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
+assert.ok(js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({coins,equippedTool}))"), 'Offline player progression must persist across worlds');
+assert.ok(js.includes("inv=readJSON('orbit_v2_inv',saved.inv||{})"), 'Offline inventory must be shared across worlds');
 assert.ok(js.includes("const uiPaused=!$('#modal').classList.contains('hidden')||!sideMenu.classList.contains('hidden')||document.hidden"), 'Gameplay must pause while menus or app background are active');
 assert.ok(js.includes('addEventListener(\'blur\',clearControls)'), 'Controls must reset when the app loses focus');
 assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'Controls must reset when app is backgrounded');
@@ -60,7 +62,7 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
 assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v13'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('orbit-shell-v14'), 'Service worker cache version must be refreshed');
 const tileRenderer = js.slice(js.indexOf('function drawTile('), js.indexOf('function drawMiningProgress()'));
 const avatarRenderer = js.slice(js.indexOf('function drawPlayer('), js.indexOf('function frame(ts)'));
 assert.ok(tileRenderer.includes('shape') === false && tileRenderer.includes('tileSpriteCache'), 'Pixel tile renderer is missing');
