@@ -40,6 +40,13 @@ for (const feature of [
 assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is missing');
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
+assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
+assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target must follow pointer movement');
+assert.ok(js.includes("localPlants[tx+','+ty]"), 'Offline crop growth state must be tracked');
+assert.ok(js.includes("onlineSavedPosition?.world_id===w.id"), 'Online world resume must restore the server position');
+assert.ok(js.includes("remoteData?.animation==='walk'"), 'Remote avatar movement state is missing');
+assert.ok(js.includes("if(!activeWorldId){localStorage.setItem('orbit_v2_world_'"), 'Online worlds must not overwrite local saves');
+assert.ok(!js.includes('}\\nfunction rectBlocked('), 'Collision helper contains a literal escaped newline');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
 assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is missing');
 for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pickaxe','stonepick','crystalpick']) {
