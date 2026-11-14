@@ -54,7 +54,7 @@ async function showWorldLobby(){screen('lobby');$('lobbyMsg').textContent='';awa
 async function loadWorldRooms(){
  const list=$('worldRoomList');list.replaceChildren();
  let rooms=[];
- if(user&&sb){$('lobbyMsg').textContent='Mengambil daftar dunia...';const r=await sb.rpc('golden_world_list');if(r.error){$('lobbyMsg').textContent='Gagal memuat daftar tambang: '+r.error.message;return}rooms=Array.isArray(r.data)?r.data:[];$('lobbyMsg').textContent='Dunia publik • pemain online';}
+ if(user&&sb){$('lobbyMsg').textContent='Mengambil daftar dunia...';const r=await sb.rpc('golden_world_list');if(r.error){$('lobbyMsg').textContent='Gagal memuat daftar tambang: '+r.error.message;return}rooms=Array.isArray(r.data)?r.data:[];if(!rooms.length)rooms=[{world_id:'main',name:'Verdant Haven',biome:'verdant',owner:'VELMORA',online:0,capacity:40,is_main:true}];$('lobbyMsg').textContent='Dunia publik • pemain online';}
  else{rooms=[{world_id:'guest_valley',name:'Verdant Haven',biome:'verdant',owner:'Offline',online:1,capacity:1},{world_id:'guest_dunes',name:'Amber Quarry',biome:'amber',owner:'Offline',online:1,capacity:1},{world_id:'guest_frost',name:'Frost Hollow',biome:'frost',owner:'Offline',online:1,capacity:1},{world_id:'guest_ember',name:'Ember Rift',biome:'ember',owner:'Offline',online:1,capacity:1}];$('lobbyMsg').textContent='Mode tamu • dunia lokal di perangkat ini';}
  if(!rooms.length){list.textContent='Belum ada tambang. Buat tambang baru!';return}
  for(const room of rooms){
