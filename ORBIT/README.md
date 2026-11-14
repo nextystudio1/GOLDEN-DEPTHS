@@ -1,13 +1,17 @@
-# ORBIT — sandbox 2D online (development)
+# ORBIT — Worlds Beyond
 
-This folder is an isolated ORBIT development branch inside the existing GOLDEN-DEPTHS repository. It does not replace the current GOLDEN DEPTHS/VELMORA site.
+An original pixel-art side-view sandbox game prototype, maintained in an isolated folder and branch inside GOLDEN-DEPTHS. This is inspired by the broad sandbox genre, not a copy of Pixel Worlds assets, UI, branding, maps, or proprietary content.
 
-## Current playable foundation
-- Landscape-friendly side-view canvas game
-- Procedural terrain with grass, dirt, stone, copper and crystal
-- Player movement, jump, mine, place basic blocks
-- Inventory and local save/load
-- Supabase client configuration uses only the project's publishable key
+## Current client build
+- Landscape and portrait responsive canvas, pixel-art tiles drawn in code.
+- Side-view movement, jump, touch and keyboard controls.
+- Mine/place blocks, hotbar, backpack, material drops and a starter crafting interaction.
+- Procedural terrain, trees, ore and crystals.
+- Local worlds list and local save for map/inventory/player.
+- Supabase project client configuration uses only the public publishable key.
 
-## Important status
-This is an early playable client foundation, **not a production release**. Online auth UI, persistent shared worlds, server-authoritative mining/inventory, realtime multiplayer, trade/market, content moderation, Android wrapper/signing, and device/CI tests are not complete. The existing repository backend belongs to the older GOLDEN DEPTHS project and must not be mixed with ORBIT's separate Supabase project.
+## Not yet release-ready
+This branch is a client gameplay foundation. It does not yet implement authenticated world creation, shared chunk persistence, realtime multiplayer, secure server-authoritative mining/rewards, full trading/market, chat/moderation, complete item content, Android packaging/signing, or production tests. Local worlds are device-local, not shared online. Do not advertise multiplayer until backend functions and multiplayer tests exist.
+
+## Project boundary
+The older root-level GOLDEN-DEPTHS game is left untouched. ORBIT is under `ORBIT/` on branch `orbit-development`.
