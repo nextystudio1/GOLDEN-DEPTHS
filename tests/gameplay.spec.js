@@ -277,7 +277,7 @@ test('nearby player can be selected and sent a direct trade request', async ({ p
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.player().x)).toBeGreaterThan(0);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.otherPlayers().length)).toBe(1);
   const camera = await page.evaluate(() => window.__GD_TEST__.camera());
@@ -346,7 +346,7 @@ test('incoming trade request opens the live offer and confirmation panel', async
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   await page.evaluate(async () => window.__TRADE_CHANGE({ new: {
     id: 'incoming-trade-2',
     initiator_id: '00000000-0000-0000-0000-000000000999',
@@ -394,7 +394,7 @@ test('in-game account deletion requires the typed confirmation word', async ({ p
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   await page.locator('#accountToggle').click();
   await expect(page.locator('#accountPanel')).toBeVisible();
   const deleteButtonState = await page.locator('#accountDeleteOpen').evaluate(el => {
@@ -519,7 +519,7 @@ test('online crafting calls the server recipes', async ({ page }) => {
     route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
   );
   await page.goto('http://127.0.0.1:4173/');
-  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await enterWorldFromLobby(page);
   await page.locator('#craftToggle').click();
   await page.locator('#craftLamp').click();
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_craft' && x.args.p_recipe_code === 'crystal_lamp'))).toBeTruthy();
