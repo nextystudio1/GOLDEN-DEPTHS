@@ -16,7 +16,7 @@ import android.widget.TextView;
 import android.graphics.Color;
 
 public class MainActivity extends Activity {
-    private static final String GAME_URL = "https://nextystudio1.github.io/GOLDEN-DEPTHS/";
+    private static final String GAME_URL = "file:///android_asset/game/index.html";
     private WebView webView;
     private TextView loading;
 
@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setAllowFileAccess(false);
+        settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
