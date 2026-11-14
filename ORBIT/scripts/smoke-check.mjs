@@ -22,6 +22,9 @@ for (const selector of [
   '#modal.inventory-mode.sheet-expanded'
 ]) {
   assert.ok(css.includes(selector), 'Missing UI style: ' + selector);
+assert.ok(css.includes('#game-shell{') && css.includes('display:block') && css.includes('overflow:hidden'), 'Full-bleed game shell is missing');
+assert.ok(css.includes('.viewport{position:absolute;inset:0'), 'World canvas must cover the full screen');
+assert.ok(css.includes('.game-controls{') && css.includes('position:absolute'), 'Touch controls must overlay the world');
 }
 for (const feature of [
   'orbit_create_world', 'orbit_join_world', 'orbit_mine_tile',
@@ -34,6 +37,8 @@ for (const feature of [
 }
 assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is missing');
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
+assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
+assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
 assert.equal(manifest.orientation, 'landscape', 'Game must request landscape orientation');
 assert.equal(manifest.display, 'fullscreen', 'Web app must request fullscreen display');
 assert.ok(workflow.includes('ORBIT_IMMERSIVE_FULLSCREEN'), 'Android immersive fullscreen patch is missing');
