@@ -161,3 +161,11 @@ button:active{transform:translateY(1px);filter:brightness(1.15)}
  .drawer-links button>span{width:31px;height:31px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Original ORBIT vector item artwork */
+.item-icon{display:inline-flex;align-items:center;justify-content:center}
+.item-icon-svg{display:block;width:29px;height:29px;overflow:visible;filter:drop-shadow(0 2px 2px #020a1277)}
+.slot .item-icon-svg{width:30px;height:30px}
+.inventory-item .item-icon-svg{width:39px;height:39px}
+.inventory-item .item-icon{font-size:0;line-height:1}
+@media(max-width:700px){.slot .item-icon-svg{width:25px;height:25px}.inventory-item .item-icon-svg{width:36px;height:36px}}
