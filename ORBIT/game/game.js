@@ -135,10 +135,10 @@ async function renderTradePanel(content){
   const row=document.createElement('div');row.className='panel-row';
   const label=document.createElement('span');label.textContent=(p.display_name||'Explorer')+' • X '+p.x+' Y '+p.y;
   const request=addText(row,'button','AJAK TRADE');
-  request.onclick=async()=>{request.disabled=true;const {error}=await sb.rpc('orbit_create_trade',{p_receiver_id:p.user_id});request.disabled=false;if(error){const m=error.message;toast(m.includes('PLAYER_TOO_FAR')?'Pemain terlalu jauh':m.includes('PLAYER_NOT_ACTIVE')?'Pemain tidak aktif':m.includes('TRADE_ALREADY_PENDING')?'Permintaan trade sudah ada':'Gagal mengajak trade: '+m);return}toast('Permintaan trade dikirim');openPanel('social')};
+  request.onclick=async()=>{request.disabled=true;const {error}=await sb.rpc('orbit_create_trade',{p_receiver_id:p.user_id});request.disabled=false;if(error){const m=error.message;toast(m.includes('PLAYER_TOO_FAR')?'Pemain terlalu jauh':m.includes('PLAYER_NOT_ACTIVE')?'Pemain tidak aktif':m.includes('TRADE_ALREADY_PENDING')?'Permintaan trade sudah ada':m.includes('TRADE_RATE_LIMIT')?'Tunggu sebentar sebelum mengirim permintaan lain':'Gagal mengajak trade: '+m);return}toast('Permintaan trade dikirim');openPanel('social')};
   row.prepend(label);content.append(row);
  });
- const {data:trades,error}=await sb.from('player_trades').select('id,sender_id,receiver_id,status,sender_offer,receiver_offer,expires_at').eq('status','pending').or('sender_id.eq.'+onlineUser.id+',receiver_id.eq.'+onlineUser.id).order('created_at',{ascending:false}).limit(20);
+ const {data:trades,error}=await sb.from('player_trades').select('id,sender_id,receiver_id,status,sender_offer,receiver_offer,expires_at').eq('status','pending').or('sender_id.eq.'+onlineUser.id+',receiver_id.eq.'+onlineUser.id).gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(20);
  if(error){addText(content,'p','Daftar trade gagal dimuat.','panel-note');return}
  addText(content,'p','📨 Permintaan & penawaran trade','panel-note');
  if(!trades?.length)addText(content,'p','Belum ada permintaan trade aktif.','panel-note');
@@ -236,7 +236,7 @@ async function refreshMarketPanel(content){
  const price=document.createElement('input');price.className='world-input';price.type='number';price.min='1';price.max='1000000000';price.value='10';price.placeholder='Harga per item';
  const currency=document.createElement('select');currency.className='world-input';[['coins','Coins'],['gems','Gems']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;currency.append(o)});
  const create=addText(content,'button','PASANG LISTING');create.className='primary';create.disabled=!available.length;
- create.onclick=async()=>{const q=Number(qty.value),p=Number(price.value);if(!Number.isInteger(q)||q<1||!Number.isSafeInteger(p)||p<1){toast('Jumlah dan harga harus valid');return}create.disabled=true;const {error}=await sb.rpc('orbit_create_listing',{p_item_id:select.value,p_quantity:q,p_unit_price:p,p_currency:currency.value});create.disabled=false;if(error){toast(error.message.includes('INSUFFICIENT_ITEMS')?'Jumlah item tidak cukup':'Gagal memasang: '+error.message);return}toast('Listing berhasil dipasang');await syncOnlineInventory();openPanel('market')};
+ create.onclick=async()=>{const q=Number(qty.value),p=Number(price.value);if(!Number.isInteger(q)||q<1||!Number.isSafeInteger(p)||p<1){toast('Jumlah dan harga harus valid');return}create.disabled=true;const {error}=await sb.rpc('orbit_create_listing',{p_item_id:select.value,p_quantity:q,p_unit_price:p,p_currency:currency.value});create.disabled=false;if(error){const m=error.message;toast(m.includes('INSUFFICIENT_ITEMS')?'Jumlah item tidak cukup':m.includes('LISTING_LIMIT')?'Maksimal 30 listing aktif':m.includes('LISTING_RATE_LIMIT')?'Tunggu sebentar sebelum memasang listing':'Gagal memasang: '+m);return}toast('Listing berhasil dipasang');await syncOnlineInventory();openPanel('market')};
  content.append(select,qty,price,currency,create);
  addText(content,'p','🛒 Listing aktif','panel-note');
  if(!listings.length)addText(content,'p','Belum ada penjualan aktif.','panel-note');
