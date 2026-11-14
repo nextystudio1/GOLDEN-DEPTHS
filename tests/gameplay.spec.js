@@ -280,6 +280,82 @@ test('nearby player can be selected and sent a direct trade request', async ({ p
   await expect(page.locator('#toast')).toContainText('Permintaan trade dikirim');
 });
 
+test('incoming trade request opens the live offer and confirmation panel', async ({ page }) => {
+  const mockClient = `
+    window.__SUPABASE_CALLS = [];
+    window.__TRADE_CHANGE = null;
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000126', email: 'receiver@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__SUPABASE_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 150, level: 1, pickaxe_level: 1, world_x: 100, world_y: 18 }, error: null };
+          if (name === 'golden_player_trade_respond') return { data: { status: 'open' }, error: null };
+          if (name === 'golden_player_trade_confirm') return { data: { completed: false }, error: null };
+          return { data: { ok: true }, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; },
+            eq() { return query; },
+            order() { return query; },
+            limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: table === 'golden_player_state' ? { gold: 150, level: 1, pickaxe_level: 1 } : null, error: null }); },
+            single() {
+              return Promise.resolve({
+                data: table === 'golden_player_trades' ? {
+                  id: 'incoming-trade-2',
+                  initiator_id: '00000000-0000-0000-0000-000000000999',
+                  recipient_id: '00000000-0000-0000-0000-000000000126',
+                  status: 'open', initiator_items: [], recipient_items: [],
+                  initiator_gold: 0, recipient_gold: 0,
+                  initiator_confirmed: false, recipient_confirmed: false
+                } : null,
+                error: null
+              });
+            },
+            then(resolve, reject) {
+              return Promise.resolve({ data: [], error: null }).then(resolve, reject);
+            }
+          };
+          return query;
+        },
+        channel: () => ({
+          on(event, filter, callback) {
+            if (filter?.table === 'golden_player_trades') window.__TRADE_CHANGE = callback;
+            return this;
+          },
+          subscribe() { return this; }
+        }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await page.evaluate(async () => window.__TRADE_CHANGE({ new: {
+    id: 'incoming-trade-2',
+    initiator_id: '00000000-0000-0000-0000-000000000999',
+    recipient_id: '00000000-0000-0000-0000-000000000126',
+    status: 'pending'
+  }}));
+  await expect(page.locator('#incomingTrade')).toBeVisible();
+  await page.locator('#incomingTradeAccept').click();
+  await expect(page.locator('#directTrade')).toBeVisible();
+  await expect(page.locator('#otherTradeName')).toContainText('Miner 000000');
+  await page.locator('#directTradeConfirm').click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_trade_confirm'))).toBeTruthy();
+  await page.locator('#directTradeCancel').click();
+  await expect(page.locator('#directTrade')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_trade_cancel'))).toBeTruthy();
+});
+
 test('landscape play controls move the player and remain on screen', async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto('http://127.0.0.1:4173/');
