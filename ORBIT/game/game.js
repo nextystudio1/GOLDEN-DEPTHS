@@ -209,7 +209,7 @@ function drawPlayer(x,y,remote=false,remoteData=null){
  ctx.fillStyle='#a9d4d5';ctx.fillRect(17,14,3,2);ctx.fillStyle='#f2d18b';ctx.fillRect(18,12,2,2);
  ctx.restore();
  if(remote&&remoteData?.display_name){
-  const label=String(remoteData.display_name).slice(0,18),width=Math.max(42,Math.min(116,ctx.measureText(label).width+18));
+  const label=String(remoteData.display_name).slice(0,18);ctx.font='9px system-ui, sans-serif';const width=Math.max(42,Math.min(116,ctx.measureText(label).width+18));
   const lx=Math.round(x+player.w/2-width/2),ly=Math.round(y-15);
   ctx.fillStyle='#071522d9';ctx.fillRect(lx,ly,width,13);
   ctx.strokeStyle='#a9c9d477';ctx.lineWidth=1;ctx.strokeRect(lx+.5,ly+.5,width-1,12);
