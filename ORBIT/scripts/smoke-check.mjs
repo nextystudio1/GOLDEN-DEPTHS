@@ -80,7 +80,9 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
 assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v22'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('orbit-shell-v23'), 'Service worker cache version must be refreshed');
+assert.ok(js.includes("if(activeWorldId&&worldChannel&&onlineUser){lastPositionSyncKey='';ensureNearbyChunks().catch(()=>{});syncOnlinePosition();worldChannel.track("), 'Online world must resync position, nearby chunks and presence when the app resumes');
+assert.ok(audioEngine.includes("if(!ac||!unlocked)return;if(document.hidden){") && audioEngine.includes('ac.suspend?.()') && audioEngine.includes('ac.resume?.();startMusic()'), 'Audio must pause in background and resume when the app returns');
 assert.ok(serviceWorker.includes('./audio.js'), 'Offline cache must include the game audio engine');
 const audioEngine = fs.readFileSync('game/audio.js', 'utf8');
 assert.ok(html.includes('<script src="audio.js"></script>'), 'Audio engine must load before gameplay code');
