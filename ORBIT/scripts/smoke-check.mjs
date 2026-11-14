@@ -52,6 +52,7 @@ assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'Controls
 assert.ok(js.includes("positionTimer=setInterval(()=>{if(worldChannel&&onlineUser)syncOnlinePosition()},500)"), 'Online position sync must stay current during movement');
 assert.ok(js.includes("last_world_id,pos_x,pos_y"), 'Online player resume data must be loaded from the profile');
 assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target must follow pointer movement');
+assert.ok(js.includes('ty=player.y+player.h+T*.45;mineAt(tx,ty,dt*16.67)'), 'Dedicated mine button must target the block at the player\'s feet, not empty air above the ground');
 assert.ok(js.includes("localPlants[tx+','+ty]"), 'Offline crop growth state must be tracked');
 assert.ok(js.includes("onlineSavedPosition?.world_id===w.id"), 'Online world resume must restore the server position');
 assert.ok(js.includes("remoteData?.animation==='walk'"), 'Remote avatar movement state is missing');
