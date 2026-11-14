@@ -1,14 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 async function holdMineBlock(page, holdMs = 1500) {
-  const target = await page.evaluate(() => {
+  const setup = await page.evaluate(() => {
     let block = window.__GD_TEST__.findReachableBlock();
     if (!block) {
       const p = window.__GD_TEST__.player();
       block = window.__GD_TEST__.setTestBlock(Math.floor(p.x / 24) + 1, Math.floor(p.y / 24) + 1, 2);
     }
-    return block;
+    return { target: block, beforeMine: window.__GD_TEST__.worldTiles() };
   });
+  const target = setup.target;
   expect(target).not.toBeNull();
   const point = await page.evaluate(({x,y}) => {
     const canvas = document.querySelector('#world');
@@ -26,7 +27,7 @@ async function holdMineBlock(page, holdMs = 1500) {
     pointerId: 7, pointerType: 'touch', clientX: point.clientX, clientY: point.clientY,
     bubbles: true, cancelable: true
   });
-  return target;
+  return { ...target, beforeMine: setup.beforeMine };
 }
 
 
@@ -127,7 +128,6 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
   expect(restored.y).toBeLessThan(456);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_position_save' && x.args.p_x === 100 && x.args.p_y >= 18 && x.args.p_y <= 19))).toBeTruthy();
 
-  const beforeMine = await page.evaluate(() => window.__GD_TEST__.worldTiles());
   const target = await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
   const miningCall = await page.evaluate(() => window.__SUPABASE_CALLS.find(x => x.name === 'golden_mine'));
@@ -135,7 +135,7 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
   expect(Number.isInteger(miningCall.args.p_player_x)).toBeTruthy();
   expect(Number.isInteger(miningCall.args.p_player_y)).toBeTruthy();
   await expect.poll(() => page.evaluate(({x,y}) => window.__GD_TEST__.chunkRevision(x,y), target)).toBeGreaterThan(0);
-  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(beforeMine);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(target.beforeMine);
   expect(await page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBe(0);
 });
 
