@@ -8,7 +8,7 @@ GOLDEN DEPTHS is an original browser-based 2D side-view mining sandbox prototype
 - Expanded 360 × 120 tile procedural world with caves, ore layers, pixel-art surface trees and four biome palettes: Verdant Fields, Amber Dunes, Frost Hollow and Ember Depths.
 - Full-world map overlay with a live player-position marker.
 - Slime encounters, health and respawn.
-- Backpack, local guest progress, crafting recipes, selling and a pickaxe shop with visible upgrade pricing.
+- Backpack, local guest progress, online server-validated crafting recipes, selling and a pickaxe shop with visible upgrade pricing.
 - Supabase account registration/login and server-side mining, inventory, gold and upgrade RPCs.
 - Player-to-player trade offers with create, accept and cancel RPCs.
 - Online world chunk save/load, conflict-aware saves, player-position persistence across sessions, and basic player-position/world-change synchronization.
@@ -40,7 +40,7 @@ A rollback-safe backend smoke test is included at `supabase/tests/gameplay_smoke
 
 ## Important release status
 
-This repository is still under development and is **not yet a verified production release**. The current seven-test Playwright suite covers guest entry, visible world rendering, sprite loading, expanded world dimensions, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, trade purchase UI/RPC wiring, and landscape controls/player movement using mocked Supabase clients. Database transaction checks have also exercised player start/duplicate usernames, pickaxe upgrade pricing, trade escrow/accept/cancel, mining cooldown, world-chunk save, player-position save and player-presence update with temporary test records rolled back and verified absent afterward. These checks do not yet prove simultaneous multiplayer synchronization with multiple real authenticated clients.
+This repository is still under development and is **not yet a verified production release**. The current seven-test Playwright suite covers guest entry, visible world rendering, sprite loading, expanded world dimensions, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, trade purchase UI/RPC wiring, and landscape controls/player movement using mocked Supabase clients. Database transaction checks have also exercised player start/duplicate usernames, pickaxe upgrade pricing, trade escrow/accept/cancel, exact-inventory escrow, server-side crafting, mining cooldown, world-chunk save, player-position save and player-presence update with temporary test records rolled back and verified absent afterward. These checks do not yet prove simultaneous multiplayer synchronization with multiple real authenticated clients.
 
 Online chunk persistence and presence are implemented in the client, but need dedicated authenticated multi-client verification. The database now limits mining RPC frequency and restricts game RPC execution to authenticated users; these protections still need end-to-end testing with real accounts. Presence is a lightweight synchronization feature, not an authoritative multiplayer game server or anti-cheat system. Payment/top-up features are not included.
 
