@@ -1,20 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg">
-<defs>
- <linearGradient id="grassTop" x2="0" y2="1"><stop stop-color="#c9f99a"/><stop offset="1" stop-color="#62b85e"/></linearGradient>
- <linearGradient id="soil" x2="1" y2="1"><stop stop-color="#d9ad7b"/><stop offset="1" stop-color="#8a583b"/></linearGradient>
- <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#d4e0e5"/><stop offset="1" stop-color="#657e8c"/></linearGradient>
- <linearGradient id="copper" x2="1" y2="1"><stop stop-color="#ffd29a"/><stop offset="1" stop-color="#a84d32"/></linearGradient>
- <linearGradient id="crystal" x2="1" y2="1"><stop stop-color="#e5ffff"/><stop offset=".45" stop-color="#6ce8df"/><stop offset="1" stop-color="#2878a7"/></linearGradient>
- <linearGradient id="wood" x2="1" y2="1"><stop stop-color="#f3c989"/><stop offset="1" stop-color="#85502d"/></linearGradient>
-</defs>
-<symbol id="grass" viewBox="0 0 32 32"><path d="M3 9 16 3l13 6v17l-13 4L3 26Z" fill="#315b43" stroke="#173d32" stroke-width="1.5"/><path d="M3 9 16 3l13 6-13 7Z" fill="url(#grassTop)"/><path d="m3 9 13 7v15L3 26Z" fill="#8c6847"/><path d="m16 16 13-7v17l-13 5Z" fill="#5e8b50"/><path d="m7 9 4-2 3 2-4 2Z" fill="#efffc2"/></symbol>
-<symbol id="dirt" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="url(#soil)" stroke="#65452f" stroke-width="1.5"/><path d="m3 9 13 7 13-7-13-6Z" fill="#c99565"/><path d="m8 13 3 1m7 5 4-2m-11 5 3-1m7 4 3-1" stroke="#f1c58c" stroke-width="2" stroke-linecap="round"/></symbol>
-<symbol id="stone" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="url(#stone)" stroke="#405867" stroke-width="1.5"/><path d="m3 9 13 7 13-7-13-6Z" fill="#dce9ed"/><path d="m8 11 4-2 2 2-4 2Zm9 8 4-2 3 2-4 2Zm-6 4 3-1 2 2-4 1Z" fill="#728d9b"/></symbol>
-<symbol id="copper" viewBox="0 0 32 32"><path d="m3 9 13-6 13 6v17l-13 4L3 26Z" fill="#563c3c" stroke="#382c34" stroke-width="1.5"/><path d="m6 10 10-5 10 5-10 5Z" fill="#77534a"/><path d="m9 12 7-4 7 4-7 4Z" fill="url(#copper)"/><path d="m11 12 5-3 3 2-5 3Z" fill="#fff0bf"/><path d="m8 20 4-2 3 2-4 2Zm10 4 4-2 3 2-4 2Z" fill="#c8784e"/></symbol>
-<symbol id="crystal" viewBox="0 0 32 32"><path d="m16 2 11 11-5 16H10L5 13Z" fill="#1d6b91" stroke="#b8fff3" stroke-width="1.5"/><path d="m16 4 7 9-7 12-6-12Z" fill="url(#crystal)"/><path d="m16 4 0 21 7-12Z" fill="#42b9cb"/><path d="m12 12 4-6 2 7-3 5Z" fill="#efffff" opacity=".9"/></symbol>
-<symbol id="wood" viewBox="0 0 32 32"><path d="m5 7 18-4 5 5-2 20-18 2-5-5Z" fill="#563827" stroke="#30251f" stroke-width="1.5"/><path d="m8 8 14-3 3 3-2 17-13 3-3-3Z" fill="url(#wood)"/><path d="m11 9 3-1-1 17-3 1Zm8-2 2-1-1 18-2 1Z" fill="#f5d8a3"/></symbol>
-<symbol id="seed" viewBox="0 0 32 32"><path d="M16 28V15" stroke="#6c9e4c" stroke-width="3" stroke-linecap="round"/><path d="M16 18C5 18 4 9 5 6c8-1 13 3 11 12Z" fill="#7bd66d" stroke="#d9ffc0" stroke-width="1.5"/><path d="M16 16C16 7 23 3 28 5c1 8-3 13-12 11Z" fill="#3cae78" stroke="#b8f5a1" stroke-width="1.5"/><path d="M16 27h9" stroke="#c5a06b" stroke-width="2" stroke-linecap="round"/></symbol>
-<symbol id="pickaxe" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="M4 10c6-7 17-8 24-2l-2 4c-6-3-12-2-18 2Z" fill="#c5d5da" stroke="#58717d" stroke-width="1.5"/><path d="m5 10 7-4 1 3-6 4Z" fill="#f5e4bd"/></symbol>
-<symbol id="stonepick" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="M4 10 10 4l6 1 4-2 8 5-5 5-7-3-7 4Z" fill="#91a4ad" stroke="#405765" stroke-width="1.5"/><path d="m7 9 4-3 4 1-4 3Z" fill="#e3edf0"/></symbol>
-<symbol id="crystalpick" viewBox="0 0 32 32"><path d="m9 28 11-18 3 2-11 18Z" fill="#9a6841" stroke="#573c2b" stroke-width="1.2"/><path d="m4 10 8-8 5 4 6-2 5 7-8 4-5-4-7 3Z" fill="url(#crystal)" stroke="#c7fff7" stroke-width="1.5"/><path d="m11 6 4-3 2 4-3 4Z" fill="#f2ffff"/></symbol>
+<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+<symbol id="grass" viewBox="0 0 32 32">
+<path fill="#203d2d" d="M2 7h28v23H2z"/><path fill="#85573b" d="M3 14h26v15H3z"/><path fill="#4e9d43" d="M3 7h26v9H3z"/><path fill="#9be36a" d="M3 7h26v4H3z"/><path fill="#d8ff9b" d="M5 8h5v2H5zM17 8h3v2h-3z"/><path fill="#326c39" d="M7 14h3v3H7zM20 18h4v2h-4zM12 23h3v2h-3z"/><path fill="#bd8c5a" d="M4 19h3v2H4zM18 25h4v2h-4z"/>
+</symbol>
+<symbol id="dirt" viewBox="0 0 32 32">
+<path fill="#543827" d="M2 3h28v27H2z"/><path fill="#a86e42" d="M3 4h26v25H3z"/><path fill="#d19a5f" d="M4 5h7v3H4zM17 7h5v2h-5zM8 17h4v2H8zM21 22h5v2h-5z"/><path fill="#77482e" d="M14 12h6v3h-6zM5 24h6v3H5zM24 13h4v3h-4z"/><path fill="#e4b77c" d="M5 9h3v2H5zM16 20h3v2h-3z"/>
+</symbol>
+<symbol id="stone" viewBox="0 0 32 32">
+<path fill="#354751" d="M2 5h28v24H2z"/><path fill="#778c96" d="M4 6h24v21H4z"/><path fill="#b3c3c7" d="M5 7h8v3H5zM17 14h7v3h-7zM7 21h5v3H7z"/><path fill="#506571" d="M13 10h4v4h-4zM22 21h5v4h-5zM4 16h4v3H4z"/><path fill="#e0e9e9" d="M6 7h3v2H6zM19 14h3v2h-3z"/>
+</symbol>
+<symbol id="copper" viewBox="0 0 32 32">
+<path fill="#433334" d="M2 5h28v24H2z"/><path fill="#79503e" d="M4 7h24v20H4z"/><path fill="#a95d36" d="M7 9h16v13H7z"/><path fill="#e49a50" d="M9 10h9v8H9z"/><path fill="#ffdc91" d="M10 10h4v4h-4zM18 17h4v3h-4z"/><path fill="#643d33" d="M5 23h7v3H5zM22 8h4v4h-4z"/>
+</symbol>
+<symbol id="crystal" viewBox="0 0 32 32">
+<path fill="#174d6a" d="M13 2h7v4h4v5h4v9h-4v6h-5v4h-8v-4H7v-6H3v-9h4V6h6z"/><path fill="#399bb5" d="M13 4h6v5h4v9h-4v6h-6v-6H9v-9h4z"/><path fill="#86f4e9" d="M13 5h4v10h-4zM10 10h3v7h-3z"/><path fill="#e3ffff" d="M13 5h3v5h-3z"/><path fill="#23718f" d="M17 15h5v7h-5z"/>
+</symbol>
+<symbol id="wood" viewBox="0 0 32 32">
+<path fill="#4a3025" d="M5 3h22v26H5z"/><path fill="#a86d3b" d="M8 4h16v23H8z"/><path fill="#d5a15b" d="M9 5h5v21H9z"/><path fill="#75452b" d="M17 7h4v17h-4z"/><path fill="#f0c77d" d="M10 6h3v5h-3zM10 18h3v6h-3z"/><path fill="#513526" d="M6 26h5v2H6zM22 4h3v4h-3z"/>
+</symbol>
+<symbol id="seed" viewBox="0 0 32 32">
+<path fill="#65442b" d="M15 17h3v12h-3z"/><path fill="#4f9a47" d="M14 15h4v6h-4z"/><path fill="#7bcf58" d="M4 7h5V4h8v4h-3v7H8v-3H4z"/><path fill="#a9ed70" d="M7 7h6v5H7z"/><path fill="#3b8c50" d="M17 10h4V7h7v4h-3v7h-8z"/><path fill="#8de16b" d="M20 11h5v4h-5z"/><path fill="#d7f9a0" d="M8 7h3v2H8zM21 11h3v2h-3z"/>
+</symbol>
+<symbol id="pickaxe" viewBox="0 0 32 32">
+<path fill="#4c3024" d="M13 13h5v17h-5z"/><path fill="#bd8650" d="M14 14h2v14h-2z"/><path fill="#5b6c76" d="M3 8h5V5h7V3h8v4h6v5h-7v-3h-6v3H9v3H3z"/><path fill="#d4e2e5" d="M5 8h9V6h7v3h-8v3H5z"/><path fill="#f6e6bd" d="M6 8h5v2H6z"/>
+</symbol>
+<symbol id="stonepick" viewBox="0 0 32 32">
+<path fill="#4c3024" d="M13 13h5v17h-5z"/><path fill="#bd8650" d="M14 14h2v14h-2z"/><path fill="#697d89" d="M3 8h5V5h6V3h8v3h6v6h-6v3h-7v-3H9v3H3z"/><path fill="#c4d3d8" d="M5 8h8V6h7v3h-8v3H5z"/><path fill="#eef5f5" d="M6 8h4v2H6z"/>
+</symbol>
+<symbol id="crystalpick" viewBox="0 0 32 32">
+<path fill="#4c3024" d="M13 13h5v17h-5z"/><path fill="#bd8650" d="M14 14h2v14h-2z"/><path fill="#287e9c" d="M3 8h6V5h5V2h7v3h6v6h-6v4h-7v-3H9v3H3z"/><path fill="#8cf6e9" d="M6 8h7V5h6v4h-7v3H6z"/><path fill="#f1ffff" d="M7 8h4V6h4v2h-5v2H7z"/>
+</symbol>
 </svg>
