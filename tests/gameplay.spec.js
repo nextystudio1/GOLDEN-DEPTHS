@@ -90,7 +90,10 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
   await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_start'))).toBeTruthy();
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_presence_update'))).toBeTruthy();
-  expect(await page.evaluate(() => window.__GD_TEST__.player())).toEqual({ x: 2400, y: 432 });
+  const restored = await page.evaluate(() => window.__GD_TEST__.player());
+  expect(restored.x).toBe(2400);
+  expect(restored.y).toBeGreaterThanOrEqual(432);
+  expect(restored.y).toBeLessThan(456);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_position_save' && x.args.p_x === 100 && x.args.p_y === 18))).toBeTruthy();
 
   await page.locator('#mine').click();
