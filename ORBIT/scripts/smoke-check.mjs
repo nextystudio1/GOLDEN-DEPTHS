@@ -53,7 +53,9 @@ assert.ok(js.includes('b.onclick=()=>save(true)'), 'Manual save must still confi
 assert.ok(js.includes("const uiPaused=!$('#modal').classList.contains('hidden')||!sideMenu.classList.contains('hidden')||document.hidden"), 'Gameplay must pause while menus or app background are active');
 assert.ok(js.includes('addEventListener(\'blur\',clearControls)'), 'Controls must reset when the app loses focus');
 assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'Controls must reset when app is backgrounded');
-assert.ok(js.includes("positionTimer=setInterval(()=>{if(worldChannel&&onlineUser)syncOnlinePosition()},500)"), 'Online position sync must stay current during movement');
+assert.ok(js.includes("positionTimer=setInterval(()=>{if(!document.hidden&&worldChannel&&onlineUser)syncOnlinePosition()},1000)"), 'Online position sync must pause in background and avoid excessive polling');
+assert.ok(js.includes("if(key===lastPositionSyncKey)return true"), 'Online position sync must skip unchanged player tiles');
+assert.ok(js.includes("if(!document.hidden&&worldChannel&&onlineUser)"), 'Realtime presence must pause while the app is backgrounded');
 assert.ok(js.includes("last_world_id,pos_x,pos_y"), 'Online player resume data must be loaded from the profile');
 assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target must follow pointer movement');
 assert.ok(js.includes('ty=player.y+player.h+T*.45;mineAt(tx,ty,dt*16.67)'), 'Dedicated mine button must target the block at the player\'s feet, not empty air above the ground');
