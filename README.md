@@ -36,6 +36,8 @@ npm test
 
 GitHub Actions also runs static smoke checks and a browser gameplay test on pushes to `main`.
 
+A rollback-safe backend smoke test is included at `supabase/tests/gameplay_smoke.sql`. Run it in the Supabase SQL editor as the database owner; it creates temporary test records inside a transaction and rolls them back at the end.
+
 ## Important release status
 
 This repository is still under development and is **not yet a verified production release**. The current seven-test Playwright suite covers guest entry, visible world rendering, sprite loading, expanded world dimensions, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, trade purchase UI/RPC wiring, and landscape controls/player movement using mocked Supabase clients. Database transaction checks have also exercised player start/duplicate usernames, pickaxe upgrade pricing, trade escrow/accept/cancel, mining cooldown, world-chunk save and player-presence update with temporary test records rolled back and verified absent afterward. These checks do not yet prove simultaneous multiplayer synchronization with multiple real authenticated clients.
