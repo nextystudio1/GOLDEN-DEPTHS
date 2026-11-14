@@ -99,3 +99,10 @@ assert.ok(releaseWorkflow.includes('workflow_dispatch:'), 'Production release mu
 assert.ok(!releaseWorkflow.includes('keytool -genkeypair'), 'Production release must not silently generate a new signing identity');
 
 console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gameplay hooks, landscape and fullscreen build config.');
+
+assert.ok(js.includes('const placeableItems=catalog.filter'), 'Hotbar must only expose items supported by the placement system');
+assert.ok(js.includes('const tile=placeableItems[selected]'), 'Offline placement must resolve the selected hotbar item safely');
+assert.ok(js.includes("items=['grass_block','soil_block','slate_block'];if(selected<0||selected>=items.length)"), 'Online placement must reject unsupported hotbar items safely');
+assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
+assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
+assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');

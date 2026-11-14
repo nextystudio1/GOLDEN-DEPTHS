@@ -274,3 +274,9 @@ html,body{font-family:"Trebuchet MS",Arial,sans-serif;background:#6e9fbd}
  .topbar{height:44px}.game-controls{min-height:62px;padding-top:3px;padding-bottom:4px}
  .round-control{width:36px;height:36px}.slot{width:34px;height:36px}
 }
+
+/* Clear item selection feedback and readable item details. */
+.inventory-item{font:inherit;color:inherit;cursor:pointer;text-align:center;}
+.inventory-item.selected{outline:2px solid #ffe58e;outline-offset:1px;background:#668f73;}
+.inventory-detail{padding:7px 9px;border:1px solid #24515a;background:#285f66;color:#fff1c8;border-radius:3px;}
+.inventory-grid{overscroll-behavior:contain;}
