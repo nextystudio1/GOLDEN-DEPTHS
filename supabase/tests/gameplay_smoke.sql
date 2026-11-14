@@ -122,6 +122,10 @@ begin
   -- Direct player trade: request, accept, escrow both offers, and require two confirmations.
   insert into public.golden_inventory(user_id,item_code,quantity)
   values (v_seller,'copper_ore',4),(v_buyer,'iron_ore',3);
+  perform set_config('request.jwt.claim.sub',v_buyer::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',v_buyer,'role','authenticated','aud','authenticated')::text,true);
+  perform public.golden_presence_update('main',102,30,-1::smallint,'idle');
+
   perform set_config('request.jwt.claim.sub',v_seller::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',v_seller,'role','authenticated','aud','authenticated')::text,true);
   perform public.golden_presence_update('main',100,30,1::smallint,'idle');
@@ -130,7 +134,6 @@ begin
 
   perform set_config('request.jwt.claim.sub',v_buyer::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',v_buyer,'role','authenticated','aud','authenticated')::text,true);
-  perform public.golden_presence_update('main',102,30,-1::smallint,'idle');
   perform public.golden_player_trade_respond(v_direct_trade,true);
   perform public.golden_player_trade_offer(v_direct_trade,'[{"item_code":"iron_ore","quantity":1}]'::jsonb,20);
 
