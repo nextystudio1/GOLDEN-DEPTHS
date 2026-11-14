@@ -3,6 +3,76 @@
 
 DROP FUNCTION IF EXISTS public.golden_mine();
 
+CREATE OR REPLACE FUNCTION private.golden_world_tile_at(p_x integer, p_y integer)
+ RETURNS integer
+ LANGUAGE plpgsql
+ IMMUTABLE STRICT
+ SET search_path TO ''
+AS $function$
+declare
+  v_surface integer;
+  v_n double precision;
+  v_roll double precision;
+  v_tile integer;
+  v_i integer;
+  v_cx integer;
+  v_cy integer;
+  v_rx double precision;
+  v_ry double precision;
+  v_dx double precision;
+  v_dy double precision;
+begin
+  if p_x < 0 or p_x >= 360 or p_y < 0 or p_y >= 120 then
+    return -1;
+  end if;
+  if p_y >= 118 then
+    return 7;
+  end if;
+
+  v_n := sin(p_x::double precision * 127.1 + 2::double precision * 311.7 + 9.2) * 43758.5453;
+  v_roll := v_n - floor(v_n);
+  v_surface := 22 + floor(
+    sin(p_x::double precision * 0.075) * 2
+    + sin(p_x::double precision * 0.021) * 4
+    + v_roll * 2
+  )::integer;
+
+  if p_y < v_surface then
+    return -1;
+  elsif p_y = v_surface then
+    v_tile := 1;
+  elsif p_y < v_surface + 5 then
+    v_tile := 0;
+  else
+    v_tile := 2;
+  end if;
+
+  v_n := sin(p_x::double precision * 127.1 + p_y::double precision * 311.7 + 9.2) * 43758.5453;
+  v_roll := v_n - floor(v_n);
+  if p_y > v_surface + 7 and v_roll > 0.987 then v_tile := 3; end if;
+  if p_y > v_surface + 12 and v_roll > 0.993 then v_tile := 4; end if;
+  if p_y > v_surface + 22 and v_roll > 0.994 then v_tile := 5; end if;
+  if p_y > v_surface + 30 and v_roll > 0.997 then v_tile := 6; end if;
+
+  for v_i in 0..149 loop
+    v_n := sin(v_i::double precision * 127.1 + 3::double precision * 311.7 + 9.2) * 43758.5453;
+    v_cx := 4 + floor((v_n - floor(v_n)) * 352)::integer;
+    v_n := sin(v_i::double precision * 127.1 + 8::double precision * 311.7 + 9.2) * 43758.5453;
+    v_cy := 30 + floor((v_n - floor(v_n)) * 62)::integer;
+    v_n := sin(v_i::double precision * 127.1 + 4::double precision * 311.7 + 9.2) * 43758.5453;
+    v_rx := 3 + (v_n - floor(v_n)) * 7;
+    v_n := sin(v_i::double precision * 127.1 + 5::double precision * 311.7 + 9.2) * 43758.5453;
+    v_ry := 2 + (v_n - floor(v_n)) * 4;
+    v_dx := (p_x - v_cx)::double precision / v_rx;
+    v_dy := (p_y - v_cy)::double precision / v_ry;
+    if v_dx * v_dx + v_dy * v_dy < 1 then
+      return -1;
+    end if;
+  end loop;
+  return v_tile;
+end
+$function$;
+
 CREATE OR REPLACE FUNCTION private.golden_craft(p_recipe_code text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -468,76 +538,6 @@ begin
   if v_rev is null then raise exception 'CHUNK_REVISION_CONFLICT'; end if;
   return jsonb_build_object('world_id',p_world_id,'chunk_x',p_chunk_x,'chunk_y',p_chunk_y,'revision',v_rev);
 end $function$;
-
-CREATE OR REPLACE FUNCTION private.golden_world_tile_at(p_x integer, p_y integer)
- RETURNS integer
- LANGUAGE plpgsql
- IMMUTABLE STRICT
- SET search_path TO ''
-AS $function$
-declare
-  v_surface integer;
-  v_n double precision;
-  v_roll double precision;
-  v_tile integer;
-  v_i integer;
-  v_cx integer;
-  v_cy integer;
-  v_rx double precision;
-  v_ry double precision;
-  v_dx double precision;
-  v_dy double precision;
-begin
-  if p_x < 0 or p_x >= 360 or p_y < 0 or p_y >= 120 then
-    return -1;
-  end if;
-  if p_y >= 118 then
-    return 7;
-  end if;
-
-  v_n := sin(p_x::double precision * 127.1 + 2::double precision * 311.7 + 9.2) * 43758.5453;
-  v_roll := v_n - floor(v_n);
-  v_surface := 22 + floor(
-    sin(p_x::double precision * 0.075) * 2
-    + sin(p_x::double precision * 0.021) * 4
-    + v_roll * 2
-  )::integer;
-
-  if p_y < v_surface then
-    return -1;
-  elsif p_y = v_surface then
-    v_tile := 1;
-  elsif p_y < v_surface + 5 then
-    v_tile := 0;
-  else
-    v_tile := 2;
-  end if;
-
-  v_n := sin(p_x::double precision * 127.1 + p_y::double precision * 311.7 + 9.2) * 43758.5453;
-  v_roll := v_n - floor(v_n);
-  if p_y > v_surface + 7 and v_roll > 0.987 then v_tile := 3; end if;
-  if p_y > v_surface + 12 and v_roll > 0.993 then v_tile := 4; end if;
-  if p_y > v_surface + 22 and v_roll > 0.994 then v_tile := 5; end if;
-  if p_y > v_surface + 30 and v_roll > 0.997 then v_tile := 6; end if;
-
-  for v_i in 0..149 loop
-    v_n := sin(v_i::double precision * 127.1 + 3::double precision * 311.7 + 9.2) * 43758.5453;
-    v_cx := 4 + floor((v_n - floor(v_n)) * 352)::integer;
-    v_n := sin(v_i::double precision * 127.1 + 8::double precision * 311.7 + 9.2) * 43758.5453;
-    v_cy := 30 + floor((v_n - floor(v_n)) * 62)::integer;
-    v_n := sin(v_i::double precision * 127.1 + 4::double precision * 311.7 + 9.2) * 43758.5453;
-    v_rx := 3 + (v_n - floor(v_n)) * 7;
-    v_n := sin(v_i::double precision * 127.1 + 5::double precision * 311.7 + 9.2) * 43758.5453;
-    v_ry := 2 + (v_n - floor(v_n)) * 4;
-    v_dx := (p_x - v_cx)::double precision / v_rx;
-    v_dy := (p_y - v_cy)::double precision / v_ry;
-    if v_dx * v_dx + v_dy * v_dy < 1 then
-      return -1;
-    end if;
-  end loop;
-  return v_tile;
-end
-$function$;
 
 CREATE OR REPLACE FUNCTION public.golden_craft(p_recipe_code text)
  RETURNS jsonb
