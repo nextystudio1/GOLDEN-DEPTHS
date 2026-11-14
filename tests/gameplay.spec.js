@@ -1,7 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 async function holdMineBlock(page, holdMs = 1500) {
-  const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
+  const target = await page.evaluate(() => {
+    let block = window.__GD_TEST__.findReachableBlock();
+    if (!block) {
+      const p = window.__GD_TEST__.player();
+      block = window.__GD_TEST__.setTestBlock(Math.floor(p.x / 24) + 1, Math.floor(p.y / 24) + 1, 2);
+    }
+    return block;
+  });
   expect(target).not.toBeNull();
   const point = await page.evaluate(({x,y}) => {
     const canvas = document.querySelector('#world');
