@@ -47,6 +47,8 @@ assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target mu
 assert.ok(js.includes("localPlants[tx+','+ty]"), 'Offline crop growth state must be tracked');
 assert.ok(js.includes("onlineSavedPosition?.world_id===w.id"), 'Online world resume must restore the server position');
 assert.ok(js.includes("remoteData?.animation==='walk'"), 'Remote avatar movement state is missing');
+assert.ok(js.includes('p.x*T-player.w/2-cameraX'), 'Remote avatar horizontal alignment is incorrect');
+assert.ok(js.includes('Tidak bisa memasang blok di tubuh pemain'), 'Online placement must prevent trapping the player');
 assert.ok(js.includes("if(!activeWorldId){localStorage.setItem('orbit_v2_world_'"), 'Online worlds must not overwrite local saves');
 assert.ok(!js.includes('}\\nfunction rectBlocked('), 'Collision helper contains a literal escaped newline');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
@@ -55,7 +57,7 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
 assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v11'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('orbit-shell-v12'), 'Service worker cache version must be refreshed');
 const tileRenderer = js.slice(js.indexOf('function drawTile('), js.indexOf('function drawMiningProgress()'));
 const avatarRenderer = js.slice(js.indexOf('function drawPlayer('), js.indexOf('function frame(ts)'));
 assert.ok(tileRenderer.includes('shape') === false && tileRenderer.includes('tileSpriteCache'), 'Pixel tile renderer is missing');
