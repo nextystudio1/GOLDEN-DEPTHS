@@ -622,3 +622,56 @@ test('touching and holding a block mines that exact block directly', async ({ pa
   await holdMineBlock(page, 1500);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before);
 });
+
+
+test('player market searches catalog items and buys an escrowed listing', async ({ page }) => {
+  const mockClient = `
+    window.__MARKET_CALLS = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-4000-8000-000000000231', email: 'market@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__MARKET_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 50000, lumen: 100, level: 1, pickaxe_level: 1, world_x: 180, world_y: 20 }, error: null };
+          if (name === 'golden_world_list') return { data: [{ world_id: 'main', name: 'Verdant Haven', biome: 'verdant', owner: 'VELMORA', online: 1, capacity: 40 }], error: null };
+          if (name === 'golden_world_join') return { data: { world_id: 'main', name: 'Verdant Haven', biome: 'verdant', seed: 920 }, error: null };
+          return { data: { ok: true }, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; }, eq() { return query; }, order() { return query; }, limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: { gold: 50000, lumen: 100, level: 1, pickaxe_level: 1 }, error: null }); },
+            then(resolve, reject) {
+              let data = [];
+              if (table === 'golden_inventory') data = [{ item_code: 'ore_chunk_moonstone_t09_luminous', quantity: 3, golden_item_catalog: { name: 'Ancient Moonstone Ore — Luminous', rarity: 'legendary', item_type: 'ore', metadata: { purpose: 'Bahan crafting langka' }, sell_value: 900 } }];
+              if (table === 'golden_trade_offers') data = [{ id: '00000000-0000-4000-8000-000000000241', seller_id: '00000000-0000-4000-8000-000000000242', item_code: 'ore_chunk_moonstone_t09_luminous', quantity: 2, gold_price: 1800, created_at: new Date().toISOString(), golden_item_catalog: { name: 'Ancient Moonstone Ore — Luminous', item_type: 'ore', rarity: 'legendary', metadata: { purpose: 'Bahan crafting langka' } } }];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#lobby')).toBeVisible({ timeout: 8000 });
+  await page.locator('#worldRoomList button').first().click();
+  await expect(page.locator('#game')).toBeVisible();
+  await page.locator('#tradeToggle').click();
+  await expect(page.locator('#trade')).toBeVisible();
+  await expect(page.locator('#tradeItem')).toContainText('Ancient Moonstone Ore');
+  await expect(page.locator('#tradeList')).toContainText('Ancient Moonstone Ore — Luminous');
+  await page.locator('#marketCategory').selectOption('ore');
+  await page.locator('#marketSearch').fill('moonstone');
+  await expect(page.locator('#marketSummary')).toContainText('1 penawaran');
+  await page.locator('#tradeList button').filter({ hasText: 'BELI' }).click();
+  await expect.poll(() => page.evaluate(() => window.__MARKET_CALLS.some(x => x.name === 'golden_trade_accept'))).toBeTruthy();
+});
