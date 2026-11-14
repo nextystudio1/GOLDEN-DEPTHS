@@ -88,6 +88,7 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
           window.__SUPABASE_CALLS.push({ name, args });
           if (name === 'golden_start') return { data: { gold: 150, level: 1, pickaxe_level: 1, world_x: 100, world_y: 18 }, error: null };
           if (name === 'golden_world_save_chunk') return { data: { revision: 1 }, error: null };
+          if (name === 'golden_mine') return { data: { item_name: 'Copper Ore', quantity: 1, tile_type: 2, chunk_revision: 1 }, error: null };
           return { data: { item_name: 'Copper Ore', quantity: 1, gold_earned: 0 }, error: null };
         },
         from: (table) => {
