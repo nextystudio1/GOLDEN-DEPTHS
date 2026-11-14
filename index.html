@@ -69,7 +69,7 @@ async function joinWorld(id,name,biome,seed=920){
  $('lobbyMsg').textContent='Menghubungkan ke '+name+'...';
  if(user&&sb){const r=await sb.rpc('golden_world_join',{p_world_id:id});if(r.error){$('lobbyMsg').textContent=r.error.message==='WORLD_FULL'?'Tambang penuh. Pilih dunia lain.':r.error.message;return}}
  worldId=id;activeWorldName=name||'Tambang';activeWorldBiome=biome||'verdant';worldSeed=(Number(seed)||920)/100;screen('game');stopPresence();chunkRevisions.clear();dirtyChunks.clear();startGame();
- if(user&&sb){await loadWorldChunks();restoreSavedPosition();startPresence()}
+ if(user&&sb){await loadWorldChunks();restoreSavedPosition();startPresence()}else loadLocalWorldChunks();
  $('depth').textContent=activeWorldName+' • MEMUAT';landscape();toast('Memasuki '+activeWorldName);
 }
 async function createWorld(){
@@ -102,8 +102,8 @@ function getMineTarget(){if(aimTile){const {x,y}=aimTile,v=world[y]?.[x],dist=Ma
 let worldId='main';const chunkRevisions=new Map(),dirtyChunks=new Map();let chunkSaveTimer=0,chunkSaveBusy=false,presenceChannel=null,presenceTimer=0,otherPlayers=new Map(),miningHeld=false,mineRepeat=0,aimTile=null,miningProgress=0,miningPointerId=null;
 function chunkKey(cx,cy){return cx+','+cy}
 function chunkSnapshot(cx,cy){return Array.from({length:32},(_,ly)=>Array.from({length:32},(_,lx)=>world[cy*32+ly]?.[cx*32+lx]??-1))}
-async function loadWorldChunks(){if(!sb||!user)return;const {data,error}=await sb.from('golden_world_chunks').select('chunk_x,chunk_y,tiles,revision').eq('world_id',worldId);if(error){toast('Data dunia online belum termuat');return}for(const row of data||[]){chunkRevisions.set(chunkKey(row.chunk_x,row.chunk_y),row.revision);for(let ly=0;ly<32;ly++)for(let lx=0;lx<32;lx++){const x=row.chunk_x*32+lx,y=row.chunk_y*32+ly;if(y<WH&&x<WW&&Array.isArray(row.tiles?.[ly]))world[y][x]=Number(row.tiles[ly][lx]??-1)}}rebuildSurfaceHeights()}
-function markChunkDirty(x,y){if(!user||!sb)return;const cx=Math.floor(x/32),cy=Math.floor(y/32),key=chunkKey(cx,cy);if(!dirtyChunks.has(key))dirtyChunks.set(key,new Set());dirtyChunks.get(key).add((y%32)+','+(x%32));clearTimeout(chunkSaveTimer);chunkSaveTimer=setTimeout(flushWorldChunks,850)}
+async function loadWorldChunks(){if(!sb||!user)return;const {data,error}=await sb.from('golden_world_chunks').select('chunk_x,chunk_y,tiles,revision').eq('world_id',worldId);if(error){toast('Data dunia online belum termuat');return}for(const row of data||[]){chunkRevisions.set(chunkKey(row.chunk_x,row.chunk_y),row.revision);for(let ly=0;ly<32;ly++)for(let lx=0;lx<32;lx++){const x=row.chunk_x*32+lx,y=row.chunk_y*32+ly;if(y<WH&&x<WW&&Array.isArray(row.tiles?.[ly]))world[y][x]=Number(row.tiles[ly][lx]??-1)}}rebuildSurfaceHeights()}function loadLocalWorldChunks(){let saved={};try{saved=JSON.parse(localStorage.getItem('gd_world_'+worldId)||'{}')||{}}catch(_){}for(const [key,tiles] of Object.entries(saved)){const [cx,cy]=key.split(',').map(Number);if(!Array.isArray(tiles)||tiles.length!==32)continue;for(let ly=0;ly<32;ly++)for(let lx=0;lx<32;lx++){const x=cx*32+lx,y=cy*32+ly;if(y<WH&&x<WW&&Array.isArray(tiles[ly]))world[y][x]=Number(tiles[ly][lx]??-1)}}rebuildSurfaceHeights()}
+function markChunkDirty(x,y){const cx=Math.floor(x/32),cy=Math.floor(y/32),key=chunkKey(cx,cy);if(!user||!sb){let saved={};try{saved=JSON.parse(localStorage.getItem('gd_world_'+worldId)||'{}')||{}}catch(_){}saved[key]=chunkSnapshot(cx,cy);try{localStorage.setItem('gd_world_'+worldId,JSON.stringify(saved))}catch(_){toast('Penyimpanan perangkat penuh')}return}if(!dirtyChunks.has(key))dirtyChunks.set(key,new Set());dirtyChunks.get(key).add((y%32)+','+(x%32));clearTimeout(chunkSaveTimer);chunkSaveTimer=setTimeout(flushWorldChunks,850)}
 async function flushWorldChunks(){
 while(chunkSaveBusy)await new Promise(resolve=>setTimeout(resolve,60));
 if(!sb||!user||!dirtyChunks.size)return true;
