@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a29">
+  <title>Penghapusan Akun — GOLDEN DEPTHS</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#263b53,#101a29 62%);color:#edf3fa;font:16px system-ui,sans-serif;display:grid;place-items:center;padding:22px}
+    main{width:min(520px,100%);background:#111e2eee;border:1px solid #d5b66e;border-radius:16px;padding:24px;box-shadow:0 18px 50px #0008}
+    h1{color:#ffdc79;margin:0 0 8px;font-size:25px}p{line-height:1.55;color:#cbd7e5}.muted{font-size:13px;color:#aab9cb}
+    label{display:block;margin:14px 0 6px;font-size:13px;color:#ffdc79}input{width:100%;padding:12px;border-radius:8px;border:1px solid #71849c;background:#0b1420;color:white;font-size:16px}
+    button{width:100%;padding:12px;margin-top:12px;border:0;border-radius:8px;background:#d5a64b;color:#101a29;font-weight:800;font-size:14px;cursor:pointer}
+    button.secondary{background:#26374b;color:#edf3fa;border:1px solid #71849c}
+    button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}#status{min-height:24px;margin-top:14px;font-size:14px;color:#ffe6a1}
+    a{color:#8ce1e7}footer{margin-top:18px;border-top:1px solid #34475c;padding-top:14px;font-size:13px}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0"></script>
+  <script src="./config.js"></script>
+</head>
+<body>
+<main>
+  <h1>Penghapusan Akun</h1>
+  <p>Gunakan halaman ini untuk menghapus akun GOLDEN DEPTHS tanpa harus membuka aplikasi. Penghapusan bersifat permanen.</p>
+  <p class="muted">Data profil, email akun, progres, Gold, inventaris, dan riwayat trade akan dihapus. Perubahan blok pada dunia bersama tetap dipertahankan agar dunia pemain lain tidak rusak.</p>
+
+  <section id="loginCard">
+    <h2>Masuk untuk verifikasi</h2>
+    <form id="loginForm">
+      <label for="email">Email akun</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button id="loginButton" type="submit">MASUK</button>
+    </form>
+  </section>
+
+  <section id="accountCard" class="hidden">
+    <p id="signedInAs"></p>
+    <label for="confirmWord">Ketik HAPUS untuk mengonfirmasi</label>
+    <input id="confirmWord" type="text" autocomplete="off" placeholder="HAPUS">
+    <button id="deleteButton" type="button">HAPUS AKUN PERMANEN</button>
+    <button id="signOutButton" type="button" class="secondary">KELUAR</button>
+  </section>
+
+  <p id="status" role="status" aria-live="polite"></p>
+  <footer>
+    <a href="./privacy.html">Kebijakan Privasi</a> · <a href="./">Kembali ke game</a>
+  </footer>
+</main>
+<script>
+(() => {
+  const cfg = window.GOLDEN_CONFIG || {};
+  const status = document.getElementById('status');
+  const loginCard = document.getElementById('loginCard');
+  const accountCard = document.getElementById('accountCard');
+  const loginButton = document.getElementById('loginButton');
+  const deleteButton = document.getElementById('deleteButton');
+  const client = window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY
+    ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY)
+    : null;
+
+  function showAccount(user) {
+    loginCard.classList.add('hidden');
+    accountCard.classList.remove('hidden');
+    document.getElementById('signedInAs').textContent = 'Akun terverifikasi: ' + (user.email || 'akun pemain');
+  }
+
+  async function restoreSession() {
+    if (!client) {
+      status.textContent = 'Layanan akun belum dapat dimuat. Muat ulang halaman saat tersambung internet.';
+      return;
+    }
+    const { data, error } = await client.auth.getSession();
+    if (error) status.textContent = 'Sesi tidak dapat diperiksa. Silakan masuk kembali.';
+    if (data?.session?.user) showAccount(data.session.user);
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!client) return;
+    loginButton.disabled = true;
+    loginButton.textContent = 'MEMERIKSA...';
+    status.textContent = '';
+    const { data, error } = await client.auth.signInWithPassword({
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value
+    });
+    loginButton.disabled = false;
+    loginButton.textContent = 'MASUK';
+    if (error || !data.user) {
+      status.textContent = 'Email atau password tidak cocok.';
+      return;
+    }
+    showAccount(data.user);
+  });
+
+  deleteButton.addEventListener('click', async () => {
+    if (!client) return;
+    if (document.getElementById('confirmWord').value.trim().toUpperCase() !== 'HAPUS') {
+      status.textContent = 'Ketik HAPUS dengan benar untuk melanjutkan.';
+      return;
+    }
+    deleteButton.disabled = true;
+    deleteButton.textContent = 'MENGHAPUS...';
+    status.textContent = 'Menghapus akun dan data terkait...';
+    const { error } = await client.functions.invoke('delete-account');
+    if (error) {
+      status.textContent = 'Penghapusan gagal. Periksa koneksi dan coba lagi.';
+      deleteButton.disabled = false;
+      deleteButton.textContent = 'HAPUS AKUN PERMANEN';
+      return;
+    }
+    await client.auth.signOut({ scope: 'local' }).catch(() => {});
+    loginCard.classList.remove('hidden');
+    accountCard.classList.add('hidden');
+    document.getElementById('loginForm').reset();
+    status.textContent = 'Akun berhasil dihapus. Terima kasih telah bermain GOLDEN DEPTHS.';
+  });
+
+  document.getElementById('signOutButton').addEventListener('click', async () => {
+    await client?.auth.signOut({ scope: 'local' });
+    accountCard.classList.add('hidden');
+    loginCard.classList.remove('hidden');
+    status.textContent = 'Kamu sudah keluar.';
+  });
+
+  restoreSession();
+})();
+</script>
+</body>
+</html>
