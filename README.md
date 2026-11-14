@@ -33,7 +33,7 @@ The Android WebView wrapper loads a local copy of the game and its SVG assets in
 - Debug APK workflow: **Build Golden Depths APK**
 - Signed Play bundle workflow: **Build Golden Depths Play release**
 
-The debug APK is for testing and is not a Play Store release. The signed release workflow requires these GitHub Actions repository secrets:
+The debug APK is for testing and is not a Play Store release. CI also builds the unsigned release variant and launches the debug APK in an Android emulator smoke test. The signed release workflow requires these GitHub Actions repository secrets:
 
 - `ANDROID_KEYSTORE_BASE64`
 - `ANDROID_KEYSTORE_PASSWORD`
