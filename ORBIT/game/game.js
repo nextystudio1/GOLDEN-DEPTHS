@@ -16,7 +16,51 @@ function mineDuration(tile){return ({1:420,2:300,3:850,4:1150,5:1500,6:520,7:180
 function advanceMining(tx,ty,delta){const tile=map[ty]?.[tx];if(!tile)return false;const key=tx+','+ty;if(miningState.key!==key)miningState={key,progress:0,tx,ty};miningState.progress=Math.min(mineDuration(tile),miningState.progress+Math.max(0,delta));return miningState.progress>=mineDuration(tile)}
 function resetMining(){miningState={key:'',progress:0,tx:-1,ty:-1}}let activeWorld='MEADOW-01',worlds=JSON.parse(localStorage.getItem('orbit_v2_worlds')||'["MEADOW-01"]');
 function rand(n){let v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v)}
-function generate(){for(let x=0;x<WW;x++){let surface=24+Math.floor(Math.sin(x*.09)*2+Math.sin(x*.027)*4+rand(x)*2);for(let y=surface;y<WH;y++){let r=rand(x*97+y*53);map[y][x]=y===surface?1:y<surface+5?2:r>.991&&y>surface+13?5:r>.965&&y>surface+7?4:3}}for(let x=8;x<WW-8;x+=7+Math.floor(rand(x)*8)){let y=map.findIndex(row=>row[x]===1);if(y>0&&rand(x*3)>.38){for(let dy=1;dy<=4;dy++)if(y-dy>=0)map[y-dy][x]=6;for(let dx=-2;dx<=2;dx++)for(let dy=-6;dy<=-3;dy++)if(Math.abs(dx)+Math.abs(dy+4)<4&&map[y+dy]?.[x+dx]===0)map[y+dy][x+dx]=7}}}
+function generate(){
+ map=Array.from({length:WH},()=>Array(WW).fill(0));
+ const surfaceAt=x=>24+Math.floor(Math.sin(x*.075)*2.5+Math.sin(x*.021)*4+Math.sin(x*.19)*.8+rand(x*3.1)*1.6);
+ for(let x=0;x<WW;x++){
+  const surface=surfaceAt(x);
+  for(let y=surface;y<WH;y++){
+   const depth=y-surface, r=rand(x*97+y*53);
+   map[y][x]=depth===0?1:depth<5?2:depth<10?(r>.08?3:2):3;
+  }
+ }
+ // Ruang gua dan lorong bawah tanah dibentuk dari seed dunia yang stabil.
+ for(let n=0;n<42;n++){
+  const cx=9+Math.floor(rand(n*31+4)*(WW-18)), cy=34+Math.floor(rand(n*47+9)*48);
+  const rx=2+Math.floor(rand(n*13+2)*5), ry=1+Math.floor(rand(n*19+6)*3);
+  for(let y=Math.max(2,cy-ry);y<Math.min(WH-2,cy+ry+1);y++)
+   for(let x=Math.max(2,cx-rx);x<Math.min(WW-2,cx+rx+1);x++){
+    const surface=surfaceAt(x), dx=(x-cx)/rx,dy=(y-cy)/ry;
+    if(y>surface+7&&dx*dx+dy*dy<1&&rand(n*991+x*17+y*29)>.06)map[y][x]=0;
+   }
+ }
+ // Kantong bijih mengikuti kedalaman, dengan variasi ukuran.
+ for(let n=0;n<105;n++){
+  const x=4+Math.floor(rand(n*71+3)*(WW-8)), y=surfaceAt(x)+8+Math.floor(rand(n*83+7)*55);
+  const ore=y>surfaceAt(x)+38&&rand(n*101)>.72?5:4;
+  const radius=1+Math.floor(rand(n*37+11)*2);
+  for(let oy=-radius;oy<=radius;oy++)for(let ox=-radius;ox<=radius;ox++){
+   const tx=x+ox,ty=y+oy;
+   if(map[ty]?.[tx]===3&&(ox*ox+oy*oy)<=radius*radius+1&&rand(n*131+tx*19+ty*23)>.18)map[ty][tx]=ore;
+  }
+ }
+ // Pepohonan dengan tajuk bervariasi; tidak menutup jalur spawn.
+ for(let x=10;x<WW-8;){
+  const y=surfaceAt(x);
+  if(x>15&&rand(x*3)>.31){
+   const height=3+Math.floor(rand(x*5+2)*3);
+   for(let dy=1;dy<=height;dy++)if(y-dy>=1)map[y-dy][x]=6;
+   const crownY=y-height;
+   for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=1;dy++){
+    const tx=x+dx,ty=crownY+dy;
+    if(Math.abs(dx)+Math.abs(dy)*.8<3.5&&map[ty]?.[tx]===0)map[ty][tx]=7;
+   }
+  }
+  x+=6+Math.floor(rand(x*11+1)*8);
+ }
+}
 function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);screenW=r.width;screenH=r.height;canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0)}addEventListener('resize',resize);resize();
 function toast(t){const e=$('#toast');e.textContent=t;e.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.style.opacity=0,1500)}
 function save(){const snapshot={map,inv,player:{x:player.x,y:player.y},coins};localStorage.setItem('orbit_v2_world_'+activeWorld,JSON.stringify(snapshot));localStorage.setItem('orbit_v2_map',JSON.stringify(map));localStorage.setItem('orbit_v2_inv',JSON.stringify(inv));localStorage.setItem('orbit_v2_player',JSON.stringify(snapshot.player));localStorage.setItem('orbit_v2_worlds',JSON.stringify(worlds));toast('Dunia tersimpan di perangkat')}
