@@ -39,6 +39,8 @@ for (const feature of [
 }
 assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is missing');
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
+assert.ok(js.includes("else{toast('Login berhasil');openPanel('social')}};"), 'Successful login must return to Social Hub and never auto-open World Gate');
+assert.ok(js.includes("const {error}=await sb.auth.signInWithPassword"), 'Manual sign-in action must remain available');
 assert.ok(js.includes('Login melalui Social Hub untuk melihat dan bergabung ke dunia online.'), 'World Gate must distinguish local worlds from available online worlds');
 assert.ok(!js.includes('Multiplayer online sedang dikembangkan.'), 'World Gate must not claim the online mode is still being developed');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
@@ -68,7 +70,7 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
 assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v18'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('orbit-shell-v19'), 'Service worker cache version must be refreshed');
 const tileRenderer = js.slice(js.indexOf('function drawTile('), js.indexOf('function drawMiningProgress()'));
 const avatarRenderer = js.slice(js.indexOf('function drawPlayer('), js.indexOf('function frame(ts)'));
 assert.ok(tileRenderer.includes('shape') === false && tileRenderer.includes('tileSpriteCache'), 'Pixel tile renderer is missing');
