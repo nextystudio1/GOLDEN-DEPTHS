@@ -126,14 +126,16 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
   expect(restored.y).toBeLessThan(456);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_position_save' && x.args.p_x === 100 && x.args.p_y >= 18 && x.args.p_y <= 19))).toBeTruthy();
 
-  await holdMineBlock(page);
+  const beforeMine = await page.evaluate(() => window.__GD_TEST__.worldTiles());
+  const target = await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
-  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBeGreaterThan(0);
-  await page.evaluate(() => window.__GD_TEST__.flushChunks());
-  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_world_save_chunk'))).toBeTruthy();
-  const saved = await page.evaluate(() => window.__SUPABASE_CALLS.find(x => x.name === 'golden_world_save_chunk'));
-  expect(saved.args.p_tiles).toHaveLength(32);
-  expect(saved.args.p_tiles.every(row => row.length === 32)).toBeTruthy();
+  const miningCall = await page.evaluate(() => window.__SUPABASE_CALLS.find(x => x.name === 'golden_mine'));
+  expect(miningCall.args).toMatchObject({ p_x: target.x, p_y: target.y });
+  expect(Number.isInteger(miningCall.args.p_player_x)).toBeTruthy();
+  expect(Number.isInteger(miningCall.args.p_player_y)).toBeTruthy();
+  await expect.poll(() => page.evaluate(({x,y}) => window.__GD_TEST__.chunkRevision(x,y), target)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(beforeMine);
+  expect(await page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBe(0);
 });
 
 
