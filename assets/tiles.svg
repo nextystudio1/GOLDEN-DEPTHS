@@ -1,23 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="24" viewBox="0 0 192 24" shape-rendering="crispEdges">
 <defs>
- <pattern id="soil" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M1 1h2v1H1zm4 4h2v2H5z" fill="#f4c18a" opacity=".24"/><path d="M3 3h1v2H3z" fill="#35251e" opacity=".35"/></pattern>
- <pattern id="rock" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M1 2h3v1H1zm6 5h4v1H7zM3 10h2v1H3z" fill="#d5e0e8" opacity=".23"/><path d="M5 4h2v2H5z" fill="#202a36" opacity=".28"/></pattern>
- <linearGradient id="oreBase" x2="0" y2="1"><stop stop-color="#8796a5"/><stop offset="1" stop-color="#3f4c5b"/></linearGradient>
+ <linearGradient id="earth" x2="0" y2="1"><stop stop-color="#986b49"/><stop offset="1" stop-color="#4a3028"/></linearGradient>
+ <linearGradient id="rock" x2=".15" y2="1"><stop stop-color="#aebdca"/><stop offset="1" stop-color="#394655"/></linearGradient>
+ <linearGradient id="copper" x2=".8" y2="1"><stop stop-color="#ffbf80"/><stop offset="1" stop-color="#9b4d2e"/></linearGradient>
+ <linearGradient id="iron" x2=".8" y2="1"><stop stop-color="#f0f5f8"/><stop offset="1" stop-color="#73899c"/></linearGradient>
+ <linearGradient id="gold" x2=".8" y2="1"><stop stop-color="#fff1a6"/><stop offset="1" stop-color="#b77a20"/></linearGradient>
+ <linearGradient id="crystal" x2=".8" y2="1"><stop stop-color="#c8ffff"/><stop offset=".4" stop-color="#48d9ef"/><stop offset="1" stop-color="#12608e"/></linearGradient>
+ <pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M1 2h2v1H1zm4 4h2v1H5z" fill="#f5c18b" opacity=".25"/><path d="M3 4h1v2H3z" fill="#261a17" opacity=".35"/></pattern>
 </defs>
-<!-- 0: rich dirt -->
-<g><rect width="24" height="24" fill="#76503a"/><path d="M0 0h24v2H0zM0 22h24v2H0z" fill="#4c3328"/><path d="M2 4h6v2H2zm13 3h5v2h-5zM4 15h4v3H4zm12 4h7v2h-7z" fill="#a87950"/><path d="M10 3h3v2h-3zM1 11h3v2H1zm11 5h3v2h-3zM19 13h3v2h-3z" fill="#4e3428"/><rect width="24" height="24" fill="url(#soil)"/><path d="M0 1h24v1H0z" fill="#c18d5b" opacity=".35"/></g>
-<!-- 1: grass -->
-<g transform="translate(24)"><rect y="4" width="24" height="20" fill="#76503a"/><path d="M0 5h24v3H0z" fill="#286b3c"/><path d="M0 1h5v4h3V2h3v3h4V1h3v4h3V2h3v4H0z" fill="#79c957"/><path d="M1 5h4V3h2v3h5V4h3v2h4V3h2v3h3v3H0z" fill="#4a9c4b"/><path d="M0 8h24v2H0z" fill="#315e36"/><path d="M3 13h5v3H3zm12 5h6v2h-6z" fill="#a87950"/><path d="M1 11h2v2H1zm9 7h2v2h-2z" fill="#4e3428"/><path d="M0 0h24v1H0z" fill="#c7ef7b"/></g>
-<!-- 2: stone -->
-<g transform="translate(48)"><rect width="24" height="24" fill="url(#oreBase)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab5bf"/><path d="M1 2h7v1H1zm12 2h8v1h-8zM4 14h7v1H4z" fill="#e0e6eb" opacity=".55"/><path d="M9 8h4v3H9zM1 21h3v2H1zM14 12h5v3h-5z" fill="#34404d"/><rect width="24" height="24" fill="url(#rock)"/></g>
-<!-- 3: copper -->
-<g transform="translate(72)"><rect width="24" height="24" fill="url(#oreBase)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab5bf"/><path d="M5 8h5v5H5zm10 5h7v5h-7z" fill="#b9683d"/><path d="M6 9h3v2H6zm10 5h4v2h-4z" fill="#ffc08a"/><path d="M4 7h8v1H4z" fill="#f2a477"/><rect width="24" height="24" fill="url(#rock)"/></g>
-<!-- 4: iron -->
-<g transform="translate(96)"><rect width="24" height="24" fill="url(#oreBase)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab5bf"/><path d="M5 8h5v5H5zm10 5h7v5h-7z" fill="#c7d2dc"/><path d="M6 9h3v2H6zm10 5h4v2h-4z" fill="#f4f8fc"/><path d="M4 7h8v1H4z" fill="#e6edf2"/><rect width="24" height="24" fill="url(#rock)"/></g>
-<!-- 5: gold -->
-<g transform="translate(120)"><rect width="24" height="24" fill="url(#oreBase)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab5bf"/><path d="M5 8h5v5H5zm10 5h7v5h-7z" fill="#e7b83e"/><path d="M6 9h3v2H6zm10 5h4v2h-4z" fill="#fff2a3"/><path d="M4 7h8v1H4z" fill="#fff8d1"/><rect width="24" height="24" fill="url(#rock)"/></g>
-<!-- 6: crystal -->
-<g transform="translate(144)"><rect width="24" height="24" fill="#1b354c"/><path d="M3 8 10 1h6l6 8-3 10-7 5-8-7z" fill="#168aa8"/><path d="m10 1 4 8-2 15-8-7z" fill="#43cce1"/><path d="m10 1 6 0 6 8-8 0z" fill="#b7fbff"/><path d="m14 9 8 0-3 10-7 5z" fill="#277ca7"/><path d="m4 16 6-15 4 8-2 15z" fill="#78eff5" opacity=".7"/><path d="M2 2h3v2H2zm18 18h3v2h-3z" fill="#9af5ff"/></g>
-<!-- 7: bedrock -->
-<g transform="translate(168)"><rect width="24" height="24" fill="#202936"/><path d="M1 2h8v5H1zm12 3h8v4h-8zM3 14h8v6H3zm12 4h7v4h-7z" fill="#465365"/><path d="M1 2h8v1H1zm12 3h8v1h-8zM3 14h8v1H3z" fill="#718196"/><path d="M10 9h4v3h-4zM1 21h4v2H1z" fill="#111923"/><path d="m9 0 2 4-2 2 2 4-3 3 2 4-3 4" fill="none" stroke="#131a25" stroke-width="2"/></g>
+<!-- soil -->
+<g><rect width="24" height="24" fill="url(#earth)"/><path d="M0 1h24v2H0zM0 22h24v2H0z" fill="#38251f"/><path d="M2 5h7v2H2zm12 4h7v2h-7zM4 15h5v3H4zm12 4h6v2h-6z" fill="#b17d52"/><path d="M10 3h3v2h-3zM1 11h3v2H1zm10 5h3v2h-3zM20 13h2v2h-2z" fill="#493026"/><path d="M0 0h24v1H0z" fill="#d3a176" opacity=".55"/><rect width="24" height="24" fill="url(#grain)"/></g>
+<!-- grass and turf -->
+<g transform="translate(24)"><rect y="5" width="24" height="19" fill="url(#earth)"/><path d="M0 5h24v3H0z" fill="#23613a"/><path d="M0 1h4v4h3V2h3v3h4V1h3v4h3V2h3v4H0z" fill="#8de16b"/><path d="M0 5h24v3H0z" fill="#4da84e"/><path d="M2 5h3V3h2v3h5V4h3v2h4V3h2v3h3v3H0z" fill="#357b42"/><path d="M0 9h24v1H0z" fill="#274e35"/><path d="M3 14h5v3H3zm12 4h6v2h-6z" fill="#a97950"/><path d="M1 12h2v2H1zm9 7h2v2h-2z" fill="#493026"/><path d="M2 1h2v2H2zm14 1h2v2h-2z" fill="#d3f78e"/></g>
+<!-- stone -->
+<g transform="translate(48)"><rect width="24" height="24" fill="url(#rock)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#c5d0d8"/><path d="M1 2h7v1H1zm12 2h8v1h-8zM4 14h7v1H4z" fill="#f0f5f8" opacity=".65"/><path d="M9 8h4v3H9zM1 21h3v2H1zM14 12h5v3h-5z" fill="#293846"/><path d="m1 8 3 2-2 3m14-2 3 2-2 3" fill="none" stroke="#657686" stroke-width="1"/></g>
+<!-- copper ore -->
+<g transform="translate(72)"><rect width="24" height="24" fill="url(#rock)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab8c3"/><path d="M3 9h7v5H3zm10 3h9v6h-9z" fill="url(#copper)"/><path d="M4 9h4v2H4zm10 3h5v2h-5z" fill="#ffe0b1"/><path d="M2 8h8v1H2zm11 9h8v1h-8z" fill="#8b452d"/><path d="M7 6h2v2H7zM20 8h2v2h-2z" fill="#f3b27d"/></g>
+<!-- iron ore -->
+<g transform="translate(96)"><rect width="24" height="24" fill="url(#rock)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab8c3"/><path d="M3 9h7v5H3zm10 3h9v6h-9z" fill="url(#iron)"/><path d="M4 9h4v2H4zm10 3h5v2h-5z" fill="#fff"/><path d="M2 8h8v1H2zm11 9h8v1h-8z" fill="#64798b"/><path d="M7 6h2v2H7zM20 8h2v2h-2z" fill="#edf6fc"/></g>
+<!-- gold ore -->
+<g transform="translate(120)"><rect width="24" height="24" fill="url(#rock)"/><path d="M1 2h7v4H1zm12 2h8v4h-8zM4 14h7v6H4zm12 4h7v4h-7z" fill="#aab8c3"/><path d="M3 9h7v5H3zm10 3h9v6h-9z" fill="url(#gold)"/><path d="M4 9h4v2H4zm10 3h5v2h-5z" fill="#fff8c7"/><path d="M2 8h8v1H2zm11 9h8v1h-8z" fill="#9d691e"/><path d="M7 6h2v2H7zM20 8h2v2h-2z" fill="#fff0a1"/></g>
+<!-- crystal ore -->
+<g transform="translate(144)"><rect width="24" height="24" fill="#1b354c"/><path d="M2 18 6 7 11 2 16 7 22 17 18 22 10 24z" fill="#155d83"/><path d="M6 7 11 2 14 9 10 24 2 18z" fill="url(#crystal)"/><path d="M11 2h5l6 15-8-8z" fill="#b7fbff"/><path d="m14 9 8 8-4 5-8 2z" fill="#247ca9"/><path d="M6 7h5l3 2-4 2H5z" fill="#e1ffff"/><path d="M2 2h3v2H2zm18 18h3v2h-3z" fill="#9af5ff"/></g>
+<!-- bedrock -->
+<g transform="translate(168)"><rect width="24" height="24" fill="#202936"/><path d="M1 2h8v5H1zm12 3h8v4h-8zM3 14h8v6H3zm12 4h7v4h-7z" fill="#526276"/><path d="M1 2h8v1H1zm12 3h8v1h-8zM3 14h8v1H3z" fill="#8293a5"/><path d="M10 9h4v3h-4zM1 21h4v2H1z" fill="#111923"/><path d="m9 0 2 4-2 2 2 4-3 3 2 4-3 4" fill="none" stroke="#131a25" stroke-width="2"/></g>
 </svg>
