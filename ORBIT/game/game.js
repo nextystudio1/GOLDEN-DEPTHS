@@ -122,6 +122,46 @@ async function loadProfile(){if(!sb||!onlineUser)return;const {error:ensureError
 function renderChatFeed(){if(!chatFeedElement)return;chatFeedElement.replaceChildren();chatFeed.slice(-40).forEach(m=>{const row=document.createElement('div');row.className='chat-message';const head=document.createElement('b');head.textContent=m.display_name||'Explorer';const body=document.createElement('span');body.textContent=m.body||'';const time=document.createElement('small');time.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});row.append(head,body,time);chatFeedElement.append(row)});chatFeedElement.scrollTop=chatFeedElement.scrollHeight}
 function appendChatMessage(m){if(!m||chatFeed.some(x=>String(x.id)===String(m.id)))return;chatFeed.push(m);chatFeed=chatFeed.slice(-60);renderChatFeed()}
 async function loadWorldChat(){if(!activeWorldId||!sb)return;const {data,error}=await sb.from('world_chat_messages').select('id,display_name,body,created_at').eq('world_id',activeWorldId).order('created_at',{ascending:true}).limit(40);if(error){toast('Chat gagal dimuat: '+error.message);return}chatFeed=data||[];renderChatFeed()}
+async function renderTradePanel(content){
+ if(!activeWorldId||!onlineUser)return;
+ addText(content,'p','🤝 Pemain di dunia','panel-note');
+ if(!remotePlayers.length)addText(content,'p','Belum ada pemain lain yang terdeteksi di dunia ini.','panel-note');
+ remotePlayers.forEach(p=>{
+  const row=document.createElement('div');row.className='panel-row';
+  const label=document.createElement('span');label.textContent=(p.display_name||'Explorer')+' • X '+p.x+' Y '+p.y;
+  const request=addText(row,'button','AJAK TRADE');
+  request.onclick=async()=>{request.disabled=true;const {error}=await sb.rpc('orbit_create_trade',{p_receiver_id:p.user_id});request.disabled=false;if(error){const m=error.message;toast(m.includes('PLAYER_TOO_FAR')?'Pemain terlalu jauh':m.includes('PLAYER_NOT_ACTIVE')?'Pemain tidak aktif':m.includes('TRADE_ALREADY_PENDING')?'Permintaan trade sudah ada':'Gagal mengajak trade: '+m);return}toast('Permintaan trade dikirim');openPanel('social')};
+  row.prepend(label);content.append(row);
+ });
+ const {data:trades,error}=await sb.from('player_trades').select('id,sender_id,receiver_id,status,sender_offer,receiver_offer,expires_at').eq('status','pending').or('sender_id.eq.'+onlineUser.id+',receiver_id.eq.'+onlineUser.id).order('created_at',{ascending:false}).limit(20);
+ if(error){addText(content,'p','Daftar trade gagal dimuat.','panel-note');return}
+ addText(content,'p','📨 Permintaan & penawaran trade','panel-note');
+ if(!trades?.length)addText(content,'p','Belum ada permintaan trade aktif.','panel-note');
+ const otherIds=[...new Set((trades||[]).map(t=>t.sender_id===onlineUser.id?t.receiver_id:t.sender_id))];
+ let names=new Map();
+ if(otherIds.length){const p=await sb.from('player_profiles').select('user_id,display_name').in('user_id',otherIds);names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]))}
+ const [itemRes,invRes]=await Promise.all([sb.from('item_catalog').select('item_id,display_name').eq('is_tradeable',true),sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id)]);
+ const tradeItems=itemRes.data||[],owned=(invRes.data||[]).filter(x=>x.quantity>0&&tradeItems.some(i=>i.item_id===x.item_id));
+ const itemNames=new Map(tradeItems.map(i=>[i.item_id,i.display_name]));
+ const offerText=offer=>(offer||[]).map(x=>(itemNames.get(x.item_id)||x.item_id)+' ×'+x.quantity).join(', ')||'Kosong';
+ (trades||[]).forEach(t=>{
+  const incoming=t.receiver_id===onlineUser.id,other=incoming?t.sender_id:t.receiver_id;
+  const card=document.createElement('div');card.className='panel-row';card.style.display='block';
+  addText(card,'b',(incoming?'Dari ':'Kepada ')+(names.get(other)||'Explorer'),'');
+  addText(card,'div','Tawaran mereka: '+offerText(incoming?t.sender_offer:t.receiver_offer));
+  addText(card,'div','Tawaran kamu: '+offerText(incoming?t.receiver_offer:t.sender_offer));
+  const select=document.createElement('select');select.className='world-input';
+  owned.forEach(it=>{const o=document.createElement('option');o.value=it.item_id;o.textContent=(itemNames.get(it.item_id)||it.item_id)+' • '+it.quantity;select.append(o)});
+  if(!owned.length){const o=document.createElement('option');o.textContent='Tidak ada item untuk ditawarkan';select.append(o)}
+  const quantity=document.createElement('input');quantity.className='world-input';quantity.type='number';quantity.min='1';quantity.max='999';quantity.value='1';
+  const offerButton=addText(card,'button','KIRIM TAWARAN');offerButton.disabled=!owned.length;
+  offerButton.onclick=async()=>{const q=Number(quantity.value);if(!Number.isInteger(q)||q<1){toast('Jumlah tidak valid');return}offerButton.disabled=true;const {error}=await sb.rpc('orbit_set_trade_offer',{p_trade_id:t.id,p_offer:[{item_id:select.value,quantity:q}]});offerButton.disabled=false;if(error){toast(error.message.includes('INSUFFICIENT_TRADE_ITEMS')?'Jumlah item tidak cukup':'Tawaran gagal: '+error.message);return}toast('Tawaran diperbarui');openPanel('social')};
+  card.append(select,quantity,offerButton);
+  if(incoming){const accept=addText(card,'button','TERIMA TRADE');accept.style.marginLeft='6px';accept.onclick=async()=>{accept.disabled=true;const {error}=await sb.rpc('orbit_accept_trade',{p_trade_id:t.id});accept.disabled=false;if(error){const m=error.message;toast(m.includes('BOTH_OFFERS_REQUIRED')?'Kedua pemain harus mengirim tawaran':m.includes('TRADE_INVENTORY_LIMIT')?'Inventaris salah satu pemain penuh':m.includes('TRADE_ITEMS_CHANGED')?'Item berubah, perbarui tawaran':'Trade gagal: '+m);return}toast('Trade berhasil');await syncOnlineInventory();openPanel('social')}}
+  const decline=addText(card,'button','TOLAK');decline.style.marginLeft='6px';decline.onclick=async()=>{const {error}=await sb.rpc('orbit_decline_trade',{p_trade_id:t.id});if(error)toast('Gagal menolak trade');else{toast('Trade ditolak');openPanel('social')}};
+  content.append(card);
+ });
+}
 function authPanel(){const title=$('#modal-title'),content=$('#modal-content');title.textContent='👥 Akun & Sosial';content.replaceChildren();chatFeedElement=null;if(!sb){addText(content,'p','Layanan online belum tersambung. Periksa koneksi internet.','panel-note');return}
  if(onlineUser){
   addText(content,'p','Login sebagai '+onlineUser.email,'panel-note');
@@ -134,6 +174,7 @@ function authPanel(){const title=$('#modal-title'),content=$('#modal-content');t
    const sendMessage=async()=>{const body=input.value.trim();if(!body)return;send.disabled=true;const {data,error}=await sb.rpc('orbit_send_chat_message',{p_world_id:activeWorldId,p_body:body});send.disabled=false;if(error){toast(error.message.includes('CHAT_RATE_LIMIT')?'Tunggu sebentar sebelum mengirim lagi':'Pesan gagal dikirim: '+error.message);return}appendChatMessage(data);input.value=''};
    send.onclick=sendMessage;input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendMessage()}});
    content.append(input);
+   renderTradePanel(content);
   }else addText(content,'p','Masuk ke dunia online untuk membuka chat dan bertemu pemain lain.','panel-note');
   const signout=addText(content,'button','KELUAR');signout.style.marginTop='10px';signout.onclick=async()=>{await sb.auth.signOut();toast('Berhasil keluar');openPanel('social')};return;
  }
@@ -155,7 +196,7 @@ async function refreshWorldList(content){if(!sb||!onlineUser){addText(content,'p
 }
 async function enterOnlineWorld(w){activeWorldId=w.id;activeWorld=w.name;$('#world-name').textContent=w.name;$('#modal').classList.add('hidden');toast('Memuat dunia online…');if(worldChannel){await sb.removeChannel(worldChannel);worldChannel=null}if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}if(positionTimer){clearInterval(positionTimer);positionTimer=null}remotePlayers=[];chatFeed=[];chatFeedElement=null;map=Array.from({length:WH},()=>Array(WW).fill(0));resetMining();
  loadedChunkKeys=new Set();const initial=[];for(let cy=0;cy<4;cy++)for(let cx=0;cx<4;cx++)initial.push(loadOnlineChunk(cx,cy));const results=await Promise.all(initial);if(results.some(x=>!x))toast('Sebagian area dunia belum termuat');const surface=map.findIndex(row=>row[Math.floor(player.x/T)]===1);if(surface>0){player.y=surface*T-player.h;player.vy=0;player.ground=false}await syncOnlineInventory();await syncOnlinePosition();
- await sb.realtime.setAuth();worldChannel=sb.channel('orbit-world:'+w.id,{config:{private:true,presence:{key:onlineUser.id}}}).on('presence',{event:'sync'},()=>{const state=worldChannel.presenceState();remotePlayers=Object.entries(state).filter(([id])=>id!==onlineUser.id).flatMap(([,metas])=>metas).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))}).on('postgres_changes',{event:'*',schema:'public',table:'world_chunks',filter:'world_id=eq.'+w.id},payload=>{const row=payload.new;if(row?.tile_data)applyChunk(row.chunk_x,row.chunk_y,row.tile_data)}).on('postgres_changes',{event:'INSERT',schema:'public',table:'world_chat_messages',filter:'world_id=eq.'+w.id},payload=>appendChatMessage(payload.new)).subscribe(async status=>{if(status==='SUBSCRIBED'){await worldChannel.track({x:Math.floor(player.x/T),y:Math.floor(player.y/T),display_name:playerDisplayName})}});presenceTimer=setInterval(()=>{if(worldChannel&&onlineUser){worldChannel.track({x:Math.floor((player.x+player.w/2)/T),y:Math.floor((player.y+player.h/2)/T),display_name:playerDisplayName}).catch(()=>{});syncOnlinePosition();ensureNearbyChunks()}},1200);
+ await sb.realtime.setAuth();worldChannel=sb.channel('orbit-world:'+w.id,{config:{private:true,presence:{key:onlineUser.id}}}).on('presence',{event:'sync'},()=>{const state=worldChannel.presenceState();remotePlayers=Object.entries(state).filter(([id])=>id!==onlineUser.id).flatMap(([id,metas])=>metas.map(p=>({...p,user_id:id}))).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))}).on('postgres_changes',{event:'*',schema:'public',table:'world_chunks',filter:'world_id=eq.'+w.id},payload=>{const row=payload.new;if(row?.tile_data)applyChunk(row.chunk_x,row.chunk_y,row.tile_data)}).on('postgres_changes',{event:'INSERT',schema:'public',table:'world_chat_messages',filter:'world_id=eq.'+w.id},payload=>appendChatMessage(payload.new)).on('postgres_changes',{event:'*',schema:'public',table:'player_trades',filter:'receiver_id=eq.'+onlineUser.id},()=>{if(!$('#modal').classList.contains('hidden')&&$('#modal-title').textContent.includes('Akun'))openPanel('social')}).on('postgres_changes',{event:'*',schema:'public',table:'player_trades',filter:'sender_id=eq.'+onlineUser.id},()=>{if(!$('#modal').classList.contains('hidden')&&$('#modal-title').textContent.includes('Akun'))openPanel('social')}).subscribe(async status=>{if(status==='SUBSCRIBED'){await worldChannel.track({x:Math.floor(player.x/T),y:Math.floor(player.y/T),display_name:playerDisplayName})}});presenceTimer=setInterval(()=>{if(worldChannel&&onlineUser){worldChannel.track({x:Math.floor((player.x+player.w/2)/T),y:Math.floor((player.y+player.h/2)/T),display_name:playerDisplayName}).catch(()=>{});syncOnlinePosition();ensureNearbyChunks()}},1200);
  toast('Online: '+w.name);
 }
 function applyChunk(cx,cy,data){const tiles=data?.tiles;if(!Array.isArray(tiles))return;for(let y=0;y<16;y++)for(let x=0;x<16;x++){const wy=cy*16+y,wx=cx*16+x;if(map[wy]&&Number.isInteger(tiles[y]?.[x]))map[wy][wx]=tiles[y][x]}}
