@@ -1,5 +1,28 @@
 import { test, expect } from '@playwright/test';
 
+async function holdMineBlock(page, holdMs = 1500) {
+  const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
+  expect(target).not.toBeNull();
+  const point = await page.evaluate(({x,y}) => {
+    const canvas = document.querySelector('#world');
+    const rect = canvas.getBoundingClientRect();
+    const camera = window.__GD_TEST__.camera();
+    return { clientX: rect.left + (x + .5) * 24 - camera.x,
+             clientY: rect.top + (y + .5) * 24 - camera.y };
+  }, target);
+  await page.locator('#world').dispatchEvent('pointerdown', {
+    pointerId: 7, pointerType: 'touch', clientX: point.clientX, clientY: point.clientY,
+    bubbles: true, cancelable: true
+  });
+  await page.waitForTimeout(holdMs);
+  await page.locator('#world').dispatchEvent('pointerup', {
+    pointerId: 7, pointerType: 'touch', clientX: point.clientX, clientY: point.clientY,
+    bubbles: true, cancelable: true
+  });
+  return target;
+}
+
+
 test('guest can enter a visible playable world and mine a block', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.stack || error.message));
@@ -35,7 +58,7 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   expect(before.height).toBeGreaterThan(300);
   expect(before.tiles).toBeGreaterThan(1000);
 
-  await page.locator('#mine').click();
+  await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before.tiles);
   await page.locator('#mapToggle').click();
   await expect(page.locator('#mapPanel')).toBeVisible();
@@ -96,7 +119,7 @@ test('authenticated client wires world chunks, presence and mining RPCs', async 
   expect(restored.y).toBeLessThan(456);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_position_save' && x.args.p_x === 100 && x.args.p_y >= 18 && x.args.p_y <= 19))).toBeTruthy();
 
-  await page.locator('#mine').click();
+  await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBeGreaterThan(0);
   await page.evaluate(() => window.__GD_TEST__.flushChunks());
@@ -144,7 +167,7 @@ test('online mining failure does not destroy or persist a block', async ({ page 
   await page.goto('http://127.0.0.1:4173/');
   await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
   const before = await page.evaluate(() => window.__GD_TEST__.worldTiles());
-  await page.locator('#mine').click();
+  await holdMineBlock(page);
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
   await expect(page.locator('#toast')).toContainText('Tunggu sebentar');
   expect(await page.evaluate(() => window.__GD_TEST__.worldTiles())).toBe(before);
@@ -252,7 +275,7 @@ test('landscape play controls move the player and remain on screen', async ({ pa
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
-  const controls = await Promise.all(['#left','#right','#jump','#mine','#hotbar'].map(sel => page.locator(sel).boundingBox()));
+  const controls = await Promise.all(['#left','#right','#jump','#hotbar'].map(sel => page.locator(sel).boundingBox()));
   for (const rect of controls) {
     expect(rect).not.toBeNull();
     expect(rect.x).toBeGreaterThanOrEqual(0);
@@ -335,26 +358,14 @@ test('online crafting calls the server recipes', async ({ page }) => {
 });
 
 
-test('touching a block selects that exact block before using the mine control', async ({ page }) => {
+test('touching and holding a block mines that exact block directly', async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto('http://127.0.0.1:4173/');
   await page.locator('#play').click();
   await page.locator('#guest').click();
   const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
   expect(target).not.toBeNull();
-  const point = await page.evaluate(({x,y}) => {
-    const canvas = document.querySelector('#world');
-    const rect = canvas.getBoundingClientRect();
-    const camera = window.__GD_TEST__.camera();
-    return { clientX: rect.left + (x + .5) * 24 - camera.x,
-             clientY: rect.top + (y + .5) * 24 - camera.y };
-  }, target);
-  await page.locator('#world').dispatchEvent('pointerdown', {
-    pointerId: 7, pointerType: 'touch', clientX: point.clientX, clientY: point.clientY,
-    bubbles: true, cancelable: true
-  });
-  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.mineTarget())).toMatchObject(target);
   const before = await page.evaluate(() => window.__GD_TEST__.worldTiles());
-  await page.locator('#mine').click();
+  await holdMineBlock(page, 1500);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before);
 });
