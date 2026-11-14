@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('guest can enter a visible playable world and mine a block', async ({ page }) => {
   const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', error => errors.push(error.stack || error.message));
   await page.goto('http://127.0.0.1:4173/');
   await expect(page.locator('#menu')).toBeVisible({ timeout: 8000 });
   await page.locator('#play').click();
