@@ -52,6 +52,65 @@ jobs:
           p.write_text(s)
           assert 'android:screenOrientation="landscape"' in p.read_text(), 'Landscape orientation was not applied'
           PY
+      - name: Enable immersive fullscreen
+        working-directory: ORBIT
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          candidates = list(Path('android/app/src/main').rglob('MainActivity.java'))
+          if not candidates:
+              raise SystemExit('Generated Capacitor MainActivity.java not found')
+          p = candidates[0]
+          s = p.read_text()
+          if 'ORBIT_IMMERSIVE_FULLSCREEN' not in s:
+              import re
+              s = s.replace('import com.getcapacitor.BridgeActivity;', '''import com.getcapacitor.BridgeActivity;
+          import android.os.Bundle;
+          import android.os.Build;
+          import android.view.View;
+          import android.view.WindowInsets;
+          import android.view.WindowInsetsController;''')
+              match = re.search(r'public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}', s)
+              if not match:
+                  raise SystemExit('Unexpected Capacitor MainActivity template: ' + s)
+              body = '''public class MainActivity extends BridgeActivity {
+              // ORBIT_IMMERSIVE_FULLSCREEN
+              private void hideSystemBars() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                      WindowInsetsController controller = getWindow().getInsetsController();
+                      if (controller != null) {
+                          controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                          controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                      }
+                  } else {
+                      getWindow().getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                          | View.SYSTEM_UI_FLAG_FULLSCREEN
+                          | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                          | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                          | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                          | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                      );
+                  }
+              }
+              @Override public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  hideSystemBars();
+              }
+              @Override public void onWindowFocusChanged(boolean hasFocus) {
+                  super.onWindowFocusChanged(hasFocus);
+                  if (hasFocus) hideSystemBars();
+              }
+              @Override protected void onResume() {
+                  super.onResume();
+                  hideSystemBars();
+              }
+          }'''
+              s = s[:match.start()] + body + s[match.end():]
+              p.write_text(s)
+          assert 'ORBIT_IMMERSIVE_FULLSCREEN' in p.read_text(), 'Immersive fullscreen patch failed'
+          print('Immersive fullscreen enabled in', p)
+          PY
       - name: Build debug APK
         working-directory: ORBIT/android
         run: |
