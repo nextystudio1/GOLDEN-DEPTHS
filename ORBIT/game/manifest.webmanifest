@@ -1,0 +1,14 @@
+{
+  "name": "ORBIT — Worlds Beyond",
+  "short_name": "ORBIT",
+  "description": "Explore, mine, build, and create worlds.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#101d30",
+  "theme_color": "#14253b",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
