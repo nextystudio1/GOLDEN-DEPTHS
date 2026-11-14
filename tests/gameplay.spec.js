@@ -285,3 +285,48 @@ test('guest pickaxe shop displays price and applies an upgrade', async ({ page }
   await expect(page.locator('#gold')).toHaveText('820');
   await expect(page.locator('#shopPickName')).toHaveText('Stone Pickaxe');
 });
+
+
+test('online crafting calls the server recipes', async ({ page }) => {
+  const mockClient = `
+    window.__SUPABASE_CALLS = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000126', email: 'crafter@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__SUPABASE_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 0, level: 1, pickaxe_level: 1, world_x: 180, world_y: 20 }, error: null };
+          if (name === 'golden_craft') return { data: { item_name: args.p_recipe_code === 'crystal_lamp' ? 'Crystal Lamp' : 'Stone Platform', quantity: 1 }, error: null };
+          return { data: {}, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; },
+            eq() { return query; },
+            order() { return query; },
+            limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: { gold: 0, level: 1, pickaxe_level: 1 }, error: null }); },
+            then(resolve, reject) { return Promise.resolve({ data: [], error: null }).then(resolve, reject); }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await page.locator('#craftToggle').click();
+  await page.locator('#craftLamp').click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_craft' && x.args.p_recipe_code === 'crystal_lamp'))).toBeTruthy();
+  await expect(page.locator('#toast')).toContainText('Crystal Lamp');
+  await page.locator('#craftPlatform').click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_craft' && x.args.p_recipe_code === 'stone_platform'))).toBeTruthy();
+});
