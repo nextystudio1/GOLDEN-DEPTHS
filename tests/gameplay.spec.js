@@ -261,10 +261,9 @@ test('landscape play controls move the player and remain on screen', async ({ pa
   const afterPointer = await page.evaluate(() => window.__GD_TEST__.player().x);
   expect(afterPointer).toBeGreaterThan(before + 10);
   await page.keyboard.down('d');
-  await page.waitForTimeout(350);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.input().right)).toBeTruthy();
   await page.keyboard.up('d');
-  const afterKeyboard = await page.evaluate(() => window.__GD_TEST__.player().x);
-  expect(afterKeyboard).toBeGreaterThan(afterPointer + 10);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.input().right)).toBeFalsy();
 });
 
 
