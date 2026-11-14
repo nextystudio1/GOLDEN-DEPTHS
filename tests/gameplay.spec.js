@@ -356,6 +356,75 @@ test('incoming trade request opens the live offer and confirmation panel', async
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_trade_cancel'))).toBeTruthy();
 });
 
+test('in-game account deletion requires the typed confirmation word', async ({ page }) => {
+  const mockClient = `
+    window.__DELETE_INVOKES = 0;
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000126', email: 'player@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        functions: { invoke: async () => { window.__DELETE_INVOKES++; return { data: { ok: true }, error: null }; } },
+        rpc: async (name) => name === 'golden_start'
+          ? { data: { gold: 150, level: 1, pickaxe_level: 1, world_x: 100, world_y: 18 }, error: null }
+          : { data: {}, error: null },
+        from: (table) => {
+          const query = {
+            select() { return query; }, eq() { return query; }, order() { return query; }, limit() { return query; },
+            maybeSingle() { return Promise.resolve({ data: table === 'golden_player_state' ? { gold: 150, level: 1, pickaxe_level: 1 } : null, error: null }); },
+            then(resolve, reject) { return Promise.resolve({ data: [], error: null }).then(resolve, reject); }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await page.locator('#accountToggle').click();
+  await expect(page.locator('#accountPanel')).toBeVisible();
+  await page.locator('#accountDeleteOpen').click();
+  await expect(page.locator('#accountDeletePanel')).toBeVisible();
+  await page.locator('#deleteAccountWord').fill('SALAH');
+  await page.locator('#deleteAccountDo').click();
+  await expect(page.locator('#deleteAccountMsg')).toContainText('Ketik HAPUS');
+  expect(await page.evaluate(() => window.__DELETE_INVOKES)).toBe(0);
+});
+
+test('public account deletion page verifies login and confirmation before request', async ({ page }) => {
+  const mockClient = `
+    window.__DELETE_INVOKES = 0;
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: null }, error: null }),
+          signInWithPassword: async ({ email }) => ({ data: { user: { email } }, error: null }),
+          signOut: async () => ({ error: null })
+        },
+        functions: { invoke: async (name) => { window.__DELETE_INVOKES++; return { data: { ok: true }, error: null }; } }
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/account-deletion.html');
+  await page.locator('#email').fill('player@example.test');
+  await page.locator('#password').fill('test-password');
+  await page.locator('#loginButton').click();
+  await expect(page.locator('#accountCard')).toBeVisible();
+  await page.locator('#confirmWord').fill('HAPUS');
+  await page.locator('#deleteButton').click();
+  await expect(page.locator('#status')).toContainText('Akun berhasil dihapus');
+  expect(await page.evaluate(() => window.__DELETE_INVOKES)).toBe(1);
+});
+
 test('landscape play controls move the player and remain on screen', async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto('http://127.0.0.1:4173/');
