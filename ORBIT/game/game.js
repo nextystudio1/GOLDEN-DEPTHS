@@ -366,6 +366,18 @@ async function refreshMarketPanel(content){
  });
 }
 const oldOpenPanel=openPanel;openPanel=function(name){if(name!=='worlds'&&name!=='social'&&name!=='market')return oldOpenPanel(name);const modal=$('#modal'),title=$('#modal-title'),content=$('#modal-content');modal.classList.remove('hidden');content.replaceChildren();if(name==='social'){authPanel();return}if(name==='market'){title.textContent='🏪 ORBIT Market';refreshMarketPanel(content);return}title.textContent='🌍 World Gate';refreshWorldList(content)};
-if(window.supabase&&cfg?.supabaseUrl&&cfg?.supabaseKey){sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);sb.auth.getSession().then(async({data,error})=>{if(error){toast('Online belum tersambung');return}onlineUser=data.session?.user||null;setAccountLabel();if(onlineUser)await loadProfile()}).catch(()=>toast('Gagal menyambung ke server'));sb.auth.onAuthStateChange(async(_event,session)=>{onlineUser=session?.user||null;setAccountLabel();if(onlineUser)await loadProfile();else{activeWorldId=null;equippedTool='starter_pickaxe';if(worldChannel){sb.removeChannel(worldChannel);worldChannel=null}}})}
+function initializeOnlineClient(){
+ if(!window.supabase||!cfg?.supabaseUrl||!cfg?.supabaseKey)return;
+ sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);
+ sb.auth.getSession().then(async({data,error})=>{if(error){toast('Online belum tersambung');return}onlineUser=data.session?.user||null;setAccountLabel();if(onlineUser)await loadProfile()}).catch(()=>toast('Gagal menyambung ke server'));
+ sb.auth.onAuthStateChange(async(_event,session)=>{onlineUser=session?.user||null;setAccountLabel();if(onlineUser)await loadProfile();else{activeWorldId=null;equippedTool='starter_pickaxe';if(worldChannel){sb.removeChannel(worldChannel);worldChannel=null}}});
+}
+function loadOnlineSdk(){
+ if(window.supabase){initializeOnlineClient();return}
+ const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0';script.async=true;
+ script.onload=initializeOnlineClient;script.onerror=()=>toast('Mode offline aktif • layanan online tidak tersedia');
+ document.head.append(script);
+}
+loadOnlineSdk();
 
 })();
