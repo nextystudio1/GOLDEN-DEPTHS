@@ -259,3 +259,18 @@ test('landscape play controls move the player and remain on screen', async ({ pa
   const after = await page.evaluate(() => window.__GD_TEST__.player().x);
   expect(after).toBeGreaterThan(before + 10);
 });
+
+
+test('guest pickaxe shop displays price and applies an upgrade', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('gd_stats', JSON.stringify({ gold: 1000, level: 1, pick: 1 })));
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  await page.locator('#upgrade').click();
+  await expect(page.locator('#shop')).toBeVisible();
+  await expect(page.locator('#shopPickCost')).toHaveText('180 Gold');
+  await page.locator('#buyUpgrade').click();
+  await expect(page.locator('#pick')).toHaveText('2');
+  await expect(page.locator('#gold')).toHaveText('820');
+  await expect(page.locator('#shopPickName')).toHaveText('Stone Pickaxe');
+});
