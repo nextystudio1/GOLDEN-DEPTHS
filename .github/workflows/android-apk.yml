@@ -43,9 +43,34 @@ jobs:
           mkdir -p android/app/src/main/assets/game/assets
           cp index.html config.js privacy.html account-deletion.html android/app/src/main/assets/game/
           cp assets/*.svg android/app/src/main/assets/game/assets/
-      - name: Build debug APK
+      - name: Build debug and release variants
         working-directory: android
         run: gradle --no-daemon assembleDebug assembleRelease
+      - name: Smoke test APK in Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n com.nextystudio.goldendepths/.MainActivity
+            sleep 10
+            adb shell pidof com.nextystudio.goldendepths
+            if adb logcat -d -s AndroidRuntime:E | grep -q 'FATAL EXCEPTION'; then
+              adb logcat -d -s AndroidRuntime:E
+              exit 1
+            fi
+            adb shell screencap -p /sdcard/golden-depths-smoke.png
+            adb pull /sdcard/golden-depths-smoke.png golden-depths-smoke.png
+      - name: Upload emulator screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-depths-android-smoke
+          path: golden-depths-smoke.png
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
