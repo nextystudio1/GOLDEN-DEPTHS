@@ -38,3 +38,58 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before.tiles);
   expect(errors).toEqual([]);
 });
+
+
+test('authenticated client wires world chunks, presence and mining RPCs', async ({ page }) => {
+  const mockClient = `
+    window.__SUPABASE_CALLS = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          getSession: async () => ({ data: { session: { user: { id: '00000000-0000-0000-0000-000000000123', email: 'miner@example.test' } } } }),
+          signOut: async () => ({ error: null })
+        },
+        rpc: async (name, args) => {
+          window.__SUPABASE_CALLS.push({ name, args });
+          if (name === 'golden_start') return { data: { gold: 150, level: 1, pickaxe_level: 1 }, error: null };
+          if (name === 'golden_world_save_chunk') return { data: { revision: 1 }, error: null };
+          return { data: { item_name: 'Copper Ore', quantity: 1, gold_earned: 0 }, error: null };
+        },
+        from: (table) => {
+          const query = {
+            select() { return query; },
+            eq() { return query; },
+            order() { return query; },
+            limit() { return query; },
+            maybeSingle() {
+              return Promise.resolve({
+                data: table === 'golden_player_state' ? { gold: 150, level: 1, pickaxe_level: 1 } : null,
+                error: null
+              });
+            },
+            then(resolve, reject) {
+              return Promise.resolve({ data: [], error: null }).then(resolve, reject);
+            }
+          };
+          return query;
+        },
+        channel: () => ({ on() { return this; }, subscribe() { return this; } }),
+        removeChannel: async () => 'ok'
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_start'))).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_presence_update'))).toBeTruthy();
+
+  await page.locator('#mine').click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_mine'))).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_world_save_chunk'))).toBeTruthy({ timeout: 5000 });
+  const saved = await page.evaluate(() => window.__SUPABASE_CALLS.find(x => x.name === 'golden_world_save_chunk'));
+  expect(saved.args.p_tiles).toHaveLength(32);
+  expect(saved.args.p_tiles.every(row => row.length === 32)).toBeTruthy();
+});
