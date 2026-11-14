@@ -147,7 +147,7 @@ jobs:
                   }
               }
           '''
-              src = src.replace('    buildTypes {', block + '\\n    buildTypes {', 1)
+              src = src.replace('    buildTypes {', block + '\n    buildTypes {', 1)
           src = re.sub(r'versionCode\\s+\\d+', 'versionCode ' + os.environ['VERSION_CODE'], src, count=1)
           src = re.sub(r'versionName\\s+["\\'][^"\\']+["\\']', "versionName '" + os.environ['VERSION_NAME'] + "'", src, count=1)
           src = re.sub(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', src, count=1)
