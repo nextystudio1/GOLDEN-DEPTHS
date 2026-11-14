@@ -70,7 +70,7 @@ jobs:
           import android.view.View;
           import android.view.WindowInsets;
           import android.view.WindowInsetsController;''')
-              match = re.search(r'public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}', s)
+              match = re.search(r'public class MainActivity extends BridgeActivity\s*\{\s*\}', s)
               if not match:
                   raise SystemExit('Unexpected Capacitor MainActivity template: ' + s)
               body = '''public class MainActivity extends BridgeActivity {
