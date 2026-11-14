@@ -5,6 +5,8 @@ const html = fs.readFileSync('game/index.html', 'utf8');
 const js = fs.readFileSync('game/game.js', 'utf8');
 const css = fs.readFileSync('game/style.css', 'utf8');
 const manifest = JSON.parse(fs.readFileSync('game/manifest.webmanifest', 'utf8'));
+const itemAssets = fs.readFileSync('game/assets/items.svg', 'utf8');
+const serviceWorker = fs.readFileSync('game/sw.js', 'utf8');
 const workflow = fs.readFileSync('../.github/workflows/orbit-android.yml', 'utf8');
 
 const requiredIds = [
@@ -39,6 +41,12 @@ assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
+assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is missing');
+for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pickaxe','stonepick','crystalpick']) {
+  assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
+}
+assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
+assert.ok(serviceWorker.includes('orbit-shell-v9'), 'Service worker cache version must be refreshed');
 assert.equal(manifest.orientation, 'landscape', 'Game must request landscape orientation');
 assert.equal(manifest.display, 'fullscreen', 'Web app must request fullscreen display');
 assert.ok(workflow.includes('ORBIT_IMMERSIVE_FULLSCREEN'), 'Android immersive fullscreen patch is missing');
