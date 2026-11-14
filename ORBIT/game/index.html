@@ -1,1 +1,15 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ORBIT</title><link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0"></script><script src="config.js"></script></head><body><main id="app"><header><strong>ORBIT</strong><span id="status">MODE LOKAL</span><span id="gold">AUR 0</span></header><canvas id="game"></canvas><section id="toolbar"><button data-tool="mine" class="active">⛏ Tambang</button><button data-tool="place">▦ Pasang</button><button id="inventory">🎒 Tas <b id="count">0</b></button><button id="save">Simpan</button></section><section id="touch"><button id="left">◀</button><button id="jump">▲</button><button id="right">▶</button></section><aside id="panel" hidden><h2>Tas Petualang</h2><div id="items"></div><button id="close">Tutup</button></aside><div id="toast"></div></main><script src="game.js"></script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#14253b"><title>ORBIT — Worlds Beyond</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0"></script><script src="config.js"></script>
+</head>
+<body><main id="game-shell">
+<header class="topbar"><div class="brand"><span class="brand-mark">✦</span><div><b>ORBIT</b><small>WORLDS BEYOND</small></div></div><div class="world-label"><span class="online-dot"></span><span id="world-name">MEADOW-01</span></div><div class="resources"><span>✧ <b id="coins">0</b></span><span>Lv <b id="level">1</b></span><button id="menu-button" aria-label="Menu">☰</button></div></header>
+<section class="viewport"><canvas id="game" aria-label="Dunia ORBIT"></canvas><div class="toast" id="toast"></div><div class="world-coords" id="coords">X: 0 • Y: 0</div></section>
+<section class="game-controls"><div class="move-controls"><button id="left" class="round-control">◀</button><button id="right" class="round-control">▶</button></div><div class="hotbar" id="hotbar"></div><div class="action-controls"><button id="jump" class="round-control jump">▲</button><button id="mine" class="round-control mine">⛏</button></div></section>
+<nav class="quickbar"><button data-panel="inventory">🎒 <span>Tas</span></button><button data-panel="craft">⚒ <span>Craft</span></button><button data-panel="worlds">🌍 <span>Dunia</span></button><button data-panel="social">👥 <span>Sosial</span></button><button data-panel="settings">⚙ <span>Menu</span></button></nav>
+<div class="modal-backdrop hidden" id="modal"><section class="modal"><div class="modal-head"><h2 id="modal-title">Tas</h2><button id="modal-close">✕</button></div><div id="modal-content"></div></section></div>
+</main><script src="game.js"></script></body></html>
