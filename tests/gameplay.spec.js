@@ -237,3 +237,25 @@ test('online trade panel loads offers and calls the accept RPC', async ({ page }
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_trade_accept' && x.args.p_offer_id === 'offer-1'))).toBeTruthy();
   await expect(page.locator('#toast')).toContainText('Transaksi berhasil');
 });
+
+
+test('landscape play controls move the player and remain on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 915, height: 412 });
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  const controls = await Promise.all(['#left','#right','#jump','#mine','#hotbar'].map(sel => page.locator(sel).boundingBox()));
+  for (const rect of controls) {
+    expect(rect).not.toBeNull();
+    expect(rect.x).toBeGreaterThanOrEqual(0);
+    expect(rect.y).toBeGreaterThanOrEqual(0);
+    expect(rect.x + rect.width).toBeLessThanOrEqual(915);
+    expect(rect.y + rect.height).toBeLessThanOrEqual(412);
+  }
+  const before = await page.evaluate(() => window.__GD_TEST__.player().x);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(350);
+  await page.keyboard.up('d');
+  const after = await page.evaluate(() => window.__GD_TEST__.player().x);
+  expect(after).toBeGreaterThan(before + 10);
+});
