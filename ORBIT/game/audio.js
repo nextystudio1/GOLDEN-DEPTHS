@@ -1,0 +1,23 @@
+(()=>{'use strict';
+const KEY='orbit_audio_settings_v1',defaults={music:0.22,effects:0.55,musicOn:true,effectsOn:true};
+let settings={...defaults};try{settings={...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{}
+let ac=null,musicGain=null,effectGain=null,unlocked=false,musicTimer=null,step=0;
+const notes=[261.63,293.66,329.63,392,440,523.25,392,329.63,293.66,349.23,440,523.25,493.88,392,329.63,293.66];
+const chords=[[130.81,164.81,196],[110,146.83,174.61],[98,130.81,164.81],[116.54,146.83,174.61]];
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{}}
+function init(){if(ac)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ac=new C();musicGain=ac.createGain();effectGain=ac.createGain();musicGain.gain.value=settings.musicOn?settings.music:0;effectGain.gain.value=settings.effectsOn?settings.effects:0;musicGain.connect(ac.destination);effectGain.connect(ac.destination)}
+function tone(freq,duration,type='sine',gain=.12,when=0,into=effectGain){if(!ac||!into)return;const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+when;o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(into);o.start(t);o.stop(t+duration+.04)}
+function musicStep(){if(!ac||!settings.musicOn)return;const bar=Math.floor(step/4)%chords.length;if(step%4===0)chords[bar].forEach((f,i)=>tone(f,1.65,'triangle',.035,i*.012,musicGain));tone(notes[step%notes.length],.42,'sine',.045,0,musicGain);step++}
+function startMusic(){if(!ac||musicTimer||!settings.musicOn)return;musicStep();musicTimer=setInterval(musicStep,430)}
+function unlock(){if(unlocked)return;init();if(!ac)return;unlocked=true;ac.resume?.();startMusic()}
+function play(name){if(!ac||!unlocked)return;if(name==='click'){tone(740,.055,'square',.035);tone(980,.045,'sine',.025,.035)}else if(name==='notify'){tone(587,.11,'sine',.07);tone(784,.16,'sine',.06,.1)}else if(name==='break'){tone(145,.12,'triangle',.12);tone(92,.16,'square',.045,.045)}else if(name==='place'){tone(310,.09,'triangle',.08);tone(470,.11,'sine',.05,.06)}else if(name==='collect'){tone(660,.09,'sine',.07);tone(880,.13,'sine',.06,.075)}else if(name==='harvest'){tone(520,.12,'sine',.07);tone(660,.13,'sine',.07,.1);tone(880,.2,'sine',.06,.2)}else if(name==='jump'){tone(190,.12,'triangle',.07);tone(290,.14,'sine',.04,.04)}}
+function update(){if(!ac)return;musicGain.gain.setTargetAtTime(settings.musicOn?settings.music:0,ac.currentTime,.08);effectGain.gain.setTargetAtTime(settings.effectsOn?settings.effects:0,ac.currentTime,.04);if(settings.musicOn)startMusic();else if(musicTimer){clearInterval(musicTimer);musicTimer=null}}
+function renderSettings(root){root.replaceChildren();const heading=document.createElement('p');heading.className='panel-note';heading.textContent='Atur musik dunia dan efek suara secara terpisah.';root.append(heading);
+const toggle=(label,key)=>{const row=document.createElement('label');row.className='audio-setting-row';const text=document.createElement('span');text.textContent=label;const input=document.createElement('input');input.type='checkbox';input.checked=!!settings[key];input.addEventListener('change',()=>{settings[key]=input.checked;persist();update()});row.append(text,input);root.append(row)};
+const volume=(label,key)=>{const row=document.createElement('label');row.className='audio-setting-row audio-volume';const text=document.createElement('span');text.textContent=label;const input=document.createElement('input');input.type='range';input.min='0';input.max='100';input.value=String(Math.round(settings[key]*100));input.addEventListener('input',()=>{settings[key]=Number(input.value)/100;persist();update()});row.append(text,input);root.append(row)};
+toggle('Musik latar','musicOn');volume('Volume musik','music');toggle('Efek suara & UI','effectsOn');volume('Volume efek','effects');
+const note=document.createElement('p');note.className='panel-note';note.textContent='Audio mulai aktif setelah sentuhan pertama pada layar.';root.append(note)}
+document.addEventListener('pointerdown',unlock,{capture:true,passive:true});document.addEventListener('keydown',unlock,{capture:true});
+document.addEventListener('click',e=>{if(e.target.closest('button,[role="button"]'))play('click')},true);
+window.ORBITAudio={play,renderSettings};
+})();

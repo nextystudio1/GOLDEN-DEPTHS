@@ -80,7 +80,15 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
 assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v21'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('orbit-shell-v22'), 'Service worker cache version must be refreshed');
+assert.ok(serviceWorker.includes('./audio.js'), 'Offline cache must include the game audio engine');
+const audioEngine = fs.readFileSync('game/audio.js', 'utf8');
+assert.ok(html.includes('<script src="audio.js"></script>'), 'Audio engine must load before gameplay code');
+for (const sound of ['break','place','collect','harvest','jump','notify','click']) assert.ok(audioEngine.includes("'" + sound + "'"), 'Missing audio event: ' + sound);
+assert.ok(audioEngine.includes('function renderSettings(root)'), 'Separate music and effects settings are missing');
+assert.ok(audioEngine.includes('musicOn') && audioEngine.includes('effectsOn'), 'Independent music/effects toggles are missing');
+assert.ok(js.includes("window.ORBITAudio?.play('break')") && js.includes("window.ORBITAudio?.play('place')"), 'Mining and placement must trigger audio');
+assert.ok(js.includes("window.ORBITAudio?.renderSettings($('#modal-content'))"), 'Settings panel must expose audio controls');
 const tileRenderer = js.slice(js.indexOf('function drawTile('), js.indexOf('function drawMiningProgress()'));
 const avatarRenderer = js.slice(js.indexOf('function drawPlayer('), js.indexOf('function frame(ts)'));
 assert.ok(tileRenderer.includes('shape') === false && tileRenderer.includes('tileSpriteCache'), 'Pixel tile renderer is missing');
