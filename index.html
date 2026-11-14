@@ -90,6 +90,6 @@ bindHold('left','left');bindHold('right','right');bindHold('jump','jump');
 addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true;if([' ','ArrowUp','w','W'].includes(e.key)){input.jump=true;e.preventDefault()}if(e.key==='e'||e.key==='E')mine()});
 addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false;if([' ','ArrowUp','w','W'].includes(e.key))input.jump=false});
 c.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')mine()});
-setTimeout(()=>screen('menu'),2100);
+setTimeout(()=>{if(!$('splash').classList.contains('hidden'))screen('menu')},2100);
 (async()=>{if(!sb){$('authmsg').textContent='Konfigurasi Supabase belum terbaca';return}let s=await sb.auth.getSession();if(s.data.session)await enter(s.data.session.user)})();
 </script></body></html>
