@@ -333,3 +333,28 @@ test('online crafting calls the server recipes', async ({ page }) => {
   await page.locator('#craftPlatform').click();
   await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_craft' && x.args.p_recipe_code === 'stone_platform'))).toBeTruthy();
 });
+
+
+test('touching a block selects that exact block before using the mine control', async ({ page }) => {
+  await page.setViewportSize({ width: 915, height: 412 });
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
+  expect(target).not.toBeNull();
+  const point = await page.evaluate(({x,y}) => {
+    const canvas = document.querySelector('#world');
+    const rect = canvas.getBoundingClientRect();
+    const camera = window.__GD_TEST__.camera();
+    return { clientX: rect.left + (x + .5) * 24 - camera.x,
+             clientY: rect.top + (y + .5) * 24 - camera.y };
+  }, target);
+  await page.locator('#world').dispatchEvent('pointerdown', {
+    pointerId: 7, pointerType: 'touch', clientX: point.clientX, clientY: point.clientY,
+    bubbles: true, cancelable: true
+  });
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.mineTarget())).toMatchObject(target);
+  const before = await page.evaluate(() => window.__GD_TEST__.worldTiles());
+  await page.locator('#mine').click();
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.worldTiles())).toBeLessThan(before);
+});
