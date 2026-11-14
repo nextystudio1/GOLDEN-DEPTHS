@@ -43,9 +43,59 @@ jobs:
           mkdir -p android/app/src/main/assets/game/assets
           cp index.html config.js privacy.html account-deletion.html android/app/src/main/assets/game/
           cp assets/*.svg android/app/src/main/assets/game/assets/
-      - name: Build debug and release variants
+      - name: Generate a persistent release signing key for this first production build
+        id: signing
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [[ -n "$KEYSTORE_BASE64" && -n "$STORE_PASSWORD" && -n "$KEY_PASSWORD" && -n "$KEY_ALIAS" ]]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/velmora-release.jks"
+          else
+            STORE_PASSWORD="$(openssl rand -hex 24)"
+            KEY_PASSWORD="$STORE_PASSWORD"
+            KEY_ALIAS="velmora-upload"
+            keytool -genkeypair -v -keystore "$RUNNER_TEMP/velmora-release.jks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" -alias "$KEY_ALIAS" -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=VELMORA, OU=Android, O=Nexty Studio, L=Medan, ST=North Sumatra, C=ID"
+            {
+              echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+              echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD"
+              echo "ANDROID_KEY_ALIAS=$KEY_ALIAS"
+            } > "$RUNNER_TEMP/signing-info.txt"
+          fi
+          keytool -list -keystore "$RUNNER_TEMP/velmora-release.jks" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/velmora-release.jks" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+          echo "KEYSTORE_GENERATED=$([[ -f "$RUNNER_TEMP/signing-info.txt" ]] && echo true || echo false)" >> "$GITHUB_ENV"
+      - name: Build debug and signed release APK
         working-directory: android
         run: gradle --no-daemon assembleDebug assembleRelease
+      - name: Package signed release APK and signing key
+        if: env.KEYSTORE_GENERATED == 'true'
+        run: |
+          mkdir -p release-package
+          cp android/app/build/outputs/apk/release/app-release.apk release-package/VELMORA-0.3.0-release.apk
+          cp "$RUNNER_TEMP/velmora-release.jks" release-package/VELMORA-release-key.jks
+          cp "$RUNNER_TEMP/signing-info.txt" release-package/SIGNING-CREDENTIALS.txt
+          sha256sum release-package/VELMORA-0.3.0-release.apk > release-package/SHA256SUMS.txt
+          cd release-package && zip -9 ../VELMORA-0.3.0-PRODUCTION.zip *
+      - name: Package release APK signed by existing repository key
+        if: env.KEYSTORE_GENERATED != 'true'
+        run: |
+          mkdir -p release-package
+          cp android/app/build/outputs/apk/release/app-release.apk release-package/VELMORA-0.3.0-release.apk
+          sha256sum release-package/VELMORA-0.3.0-release.apk > release-package/SHA256SUMS.txt
+          cd release-package && zip -9 ../VELMORA-0.3.0-PRODUCTION.zip *
+      - name: Upload production release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: velmora-production-release
+          path: VELMORA-0.3.0-PRODUCTION.zip
+          if-no-files-found: error
+          retention-days: 90
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
