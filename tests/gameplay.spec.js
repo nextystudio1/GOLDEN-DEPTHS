@@ -10,6 +10,7 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   await page.locator('#guest').click();
   await expect(page.locator('#game')).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.worldTiles() || 0)).toBeGreaterThan(1000);
+  expect(await page.evaluate(() => window.__GD_TEST__.worldSize())).toEqual({ width: 360, height: 120 });
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.assets?.() || {tiles:false,miner:false})).toEqual({tiles:true,miner:true});
   await page.waitForTimeout(300);
   expect(errors, 'Browser runtime errors before frame assertion').toEqual([]);
