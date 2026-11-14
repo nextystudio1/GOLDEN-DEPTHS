@@ -141,3 +141,44 @@ test('online mining failure does not destroy or persist a block', async ({ page 
   expect(await page.evaluate(() => window.__GD_TEST__.chunkState().dirty.length)).toBe(0);
   expect(await page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_world_save_chunk'))).toBeFalsy();
 });
+
+
+test('guest can open the live world events panel', async ({ page }) => {
+  const mockClient = `
+    window.supabase = {
+      createClient: () => ({
+        auth: { getSession: async () => ({ data: { session: null } }) },
+        from: (table) => {
+          const query = {
+            select() { return query; },
+            eq() { return query; },
+            lte() { return query; },
+            gte() { return query; },
+            order() { return query; },
+            then(resolve, reject) {
+              const data = table === 'golden_world_events' ? [{
+                title: 'Crystal Rush',
+                description: 'Peluang Crystal Shard meningkat.',
+                starts_at: new Date(Date.now() - 60000).toISOString(),
+                ends_at: new Date(Date.now() + 86400000).toISOString(),
+                rewards: { crystal_chance: '14%' }
+              }] : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            }
+          };
+          return query;
+        }
+      })
+    };
+  `;
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: mockClient })
+  );
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  await page.locator('#eventToggle').click();
+  await expect(page.locator('#events')).toBeVisible();
+  await expect(page.locator('#eventList')).toContainText('Crystal Rush');
+  await expect(page.locator('#eventList')).toContainText('Peluang Crystal Shard meningkat.');
+});
