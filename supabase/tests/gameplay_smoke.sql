@@ -67,6 +67,20 @@ begin
   select quantity into v_qty from public.golden_inventory where user_id=v_seller and item_code='copper_ore';
   if v_qty<>3 then raise exception 'TRADE_CANCEL_RETURN_TEST_FAILED'; end if;
 
+  -- Online crafting consumes server inventory atomically.
+  v_result:=public.golden_craft('stone_platform');
+  select quantity into v_qty from public.golden_inventory where user_id=v_seller and item_code='stone_platform';
+  if v_qty<>5 then raise exception 'STONE_PLATFORM_CRAFT_TEST_FAILED'; end if;
+  select quantity into v_qty from public.golden_inventory where user_id=v_seller and item_code='copper_ore';
+  if coalesce(v_qty,0)<>0 then raise exception 'STONE_PLATFORM_INGREDIENT_TEST_FAILED'; end if;
+
+  perform set_config('request.jwt.claim.sub',v_buyer::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',v_buyer,'role','authenticated','aud','authenticated')::text,true);
+  insert into public.golden_inventory(user_id,item_code,quantity) values(v_buyer,'crystal_shard',2);
+  v_result:=public.golden_craft('crystal_lamp');
+  select quantity into v_qty from public.golden_inventory where user_id=v_buyer and item_code='crystal_lamp';
+  if v_qty<>1 then raise exception 'CRYSTAL_LAMP_CRAFT_TEST_FAILED'; end if;
+
   -- Pickaxe upgrade pricing and rarity progression.
   perform set_config('request.jwt.claim.sub',v_buyer::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',v_buyer,'role','authenticated','aud','authenticated')::text,true);
