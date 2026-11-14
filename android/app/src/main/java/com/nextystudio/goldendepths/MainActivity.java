@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
             }
         });
         loading = new TextView(this);
-        loading.setText("Memuat GOLDEN DEPTHS…");
+        loading.setText("Memuat VELMORA…");
         loading.setTextColor(Color.WHITE);
         loading.setTextSize(16);
         loading.setGravity(android.view.Gravity.CENTER);
