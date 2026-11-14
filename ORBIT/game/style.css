@@ -47,7 +47,7 @@ button:active{transform:translateY(1px);filter:brightness(1.15)}
 #modal.inventory-mode{place-items:end center;padding:0;background:#02091480;backdrop-filter:blur(2px)}
 #modal.inventory-mode .modal{width:min(760px,100vw);height:min(76dvh,620px);max-height:90dvh;margin:0;border-radius:20px 20px 0 0;border:1px solid #7894a5;border-bottom:0;padding:8px 16px max(14px,env(safe-area-inset-bottom));background:linear-gradient(160deg,#203c52,#102237 68%,#0b1b2d);box-shadow:0 -18px 55px #0009;display:flex;flex-direction:column;overflow:hidden;transform:translateY(0);transition:height .2s ease,transform .2s ease}
 #modal.inventory-mode .modal-head{flex:0 0 auto;margin-bottom:10px}
-#modal.inventory-mode #modal-content{overflow:auto;min-height:0;padding:2px 2px 18px;overscroll-behavior:contain;touch-action:pan-y}
+#modal.inventory-mode #modal-content{flex:1;overflow:auto;min-height:0;padding:2px 2px 18px;overscroll-behavior:contain;touch-action:pan-y}
 .sheet-grabber{height:30px;flex:0 0 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:grab;touch-action:none;user-select:none}
 .sheet-grabber span{display:block;width:46px;height:5px;border-radius:8px;background:#9cb6c4;box-shadow:0 1px 2px #0008}
 .sheet-grabber small{font-size:7px;letter-spacing:1.6px;color:#91aaba;font-weight:800}
