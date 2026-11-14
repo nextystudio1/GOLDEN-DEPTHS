@@ -238,6 +238,7 @@ test('nearby player can be selected and sent a direct trade request', async ({ p
   await page.goto('http://127.0.0.1:4173/');
   await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__.player().x)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.otherPlayers().length)).toBe(1);
   const camera = await page.evaluate(() => window.__GD_TEST__.camera());
   await page.mouse.click(102 * 24 - camera.x, 18 * 24 - camera.y);
   await expect(page.locator('#playerAction')).toBeVisible();
