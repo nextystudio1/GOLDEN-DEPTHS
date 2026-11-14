@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "ORBIT original 2D sandbox game",
-  "scripts": { "check": "node --check game/game.js" },
+  "scripts": {
+    "check": "node --check game/game.js && node scripts/smoke-check.mjs"
+  },
   "dependencies": {
     "@capacitor/android": "8.6.2",
     "@capacitor/core": "8.6.2"
   },
-  "devDependencies": { "@capacitor/cli": "8.6.2" }
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  }
 }
