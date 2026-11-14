@@ -16,6 +16,10 @@ GOLDEN DEPTHS is an original browser-based 2D side-view mining sandbox prototype
 - Live Crystal Rush event with a temporary increased Crystal Shard drop chance.
 - Original project-created pixel SVG terrain/ore atlas and miner character sprite.
 
+## Android test APK
+
+An Android WebView wrapper project is in `android/`. It launches the hosted game in landscape immersive mode and requires an internet connection. Run the **Build Golden Depths APK** workflow from GitHub Actions (or push an Android project change), then download the `golden-depths-debug-apk` artifact from the completed run. This is a debug/testing APK, not a signed Play Store release.
+
 ## Technology
 
 - Frontend: HTML, CSS, JavaScript Canvas.
