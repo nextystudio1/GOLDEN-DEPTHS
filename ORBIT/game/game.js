@@ -176,7 +176,7 @@ function drawMiningProgress(){if(!miningState.key||miningState.tx<0)return;const
  if(p>.18){ctx.save();ctx.beginPath();ctx.strokeStyle='#17202a';ctx.lineWidth=1.15;ctx.globalAlpha=Math.min(.82,p+.12);ctx.moveTo(x+7,y+5);ctx.lineTo(x+11,y+10);ctx.lineTo(x+9,y+14);ctx.moveTo(x+11,y+10);ctx.lineTo(x+16,y+8);if(p>.48){ctx.moveTo(x+9,y+14);ctx.lineTo(x+6,y+19);ctx.moveTo(x+16,y+8);ctx.lineTo(x+18,y+14)}if(p>.78){ctx.moveTo(x+16,y+8);ctx.lineTo(x+14,y+4);ctx.moveTo(x+9,y+14);ctx.lineTo(x+13,y+19)}ctx.stroke();ctx.restore()}
 }
 function drawPlayer(x,y,remote=false,remoteData=null){
- const t=performance.now()/105,walking=remote?remoteData?.animation==='walk':Math.abs(player.vx)>.15,step=walking?Math.sin(t)*2:0,bob=walking?Math.abs(Math.sin(t)):0,face=remote?(Number(remoteData?.face)||1):player.face;
+ const t=performance.now()/105,walking=remote?remoteData?.animation==='walk':Math.abs(player.vx)>.15,step=walking?Math.round(Math.sin(t)*2):0,bob=walking?Math.abs(Math.sin(t)):0,face=remote?(Number(remoteData?.face)||1):player.face,swing=(remote?remoteData?.animation==='mine':input.mine||mining)?Math.sin(performance.now()/42)*.58:0;
  ctx.save();ctx.translate(Math.round(x),Math.round(y-bob));
  if(face<0){ctx.translate(player.w,0);ctx.scale(-1,1)}
  // Compact original pixel avatar: backpack, boots, tunic, face and hair.
@@ -185,12 +185,12 @@ function drawPlayer(x,y,remote=false,remoteData=null){
  ctx.fillStyle='#e1b36d';ctx.fillRect(2,24+step,7,4);ctx.fillRect(10,24-step,7,4);
  ctx.fillStyle='#2d5e9a';ctx.fillRect(3,10,12,12);ctx.fillStyle='#4b88c5';ctx.fillRect(4,11,10,9);
  ctx.fillStyle='#f1d27c';ctx.fillRect(8,12,2,8);ctx.fillRect(4,11,3,2);
- ctx.fillStyle='#d99569';ctx.fillRect(1,13,3,8);ctx.fillRect(14,13,3,8);
+ ctx.fillStyle='#d99569';ctx.fillRect(1,13+Math.round(swing*2),3,8);ctx.fillRect(14,13-Math.round(swing*3),3,8);
  ctx.fillStyle='#f4c59a';ctx.fillRect(3,2,11,10);ctx.fillStyle='#ffddb0';ctx.fillRect(4,3,9,7);
  ctx.fillStyle='#593b2c';ctx.fillRect(2,0,13,4);ctx.fillRect(2,2,3,5);ctx.fillRect(11,2,4,5);
  ctx.fillStyle='#2c2730';ctx.fillRect(11,5,2,2);ctx.fillStyle='#fff1c8';ctx.fillRect(12,5,1,1);
  ctx.fillStyle='#f2c36f';ctx.fillRect(6,11,6,2);
- ctx.fillStyle='#273d54';ctx.fillRect(17,13,3,3);ctx.fillStyle='#c9d7dc';ctx.fillRect(18,12,2,2);
+ ctx.save();ctx.translate(18,14);ctx.rotate(swing);ctx.strokeStyle='#64442d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,7);ctx.lineTo(2,-3);ctx.stroke();ctx.fillStyle='#273d54';ctx.fillRect(-3,-5,8,3);ctx.fillStyle='#c9d7dc';ctx.fillRect(1,-6,3,2);ctx.restore();
  ctx.restore();
  if(remote&&remoteData?.display_name){
   const label=String(remoteData.display_name).slice(0,18);ctx.font='9px monospace';const width=Math.max(42,Math.min(116,ctx.measureText(label).width+18));
