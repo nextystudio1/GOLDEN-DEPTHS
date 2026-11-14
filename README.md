@@ -5,7 +5,8 @@ GOLDEN DEPTHS is an original browser-based 2D side-view mining sandbox prototype
 ## Current playable systems
 
 - Side-view platform movement, jumping, mining and touch controls for mobile.
-- Expanded 360 × 120 tile procedural world with caves, ore layers and four biome palettes: Verdant Fields, Amber Dunes, Frost Hollow and Ember Depths.
+- Expanded 360 × 120 tile procedural world with caves, ore layers, pixel-art surface trees and four biome palettes: Verdant Fields, Amber Dunes, Frost Hollow and Ember Depths.
+- Full-world map overlay with a live player-position marker.
 - Slime encounters, health and respawn.
 - Backpack, local guest progress, crafting recipes, selling and pickaxe upgrades.
 - Supabase account registration/login and server-side mining, inventory, gold and upgrade RPCs.
@@ -37,7 +38,7 @@ GitHub Actions also runs static smoke checks and a browser gameplay test on push
 
 ## Important release status
 
-This repository is still under development and is **not yet a verified production release**. The current Playwright suite covers guest entry, visible world rendering, sprite loading, mining, failed online mining behavior, online chunk-save wiring, the live event panel, and the trade purchase UI/RPC call using mocked Supabase clients. It does not yet prove the complete account, trade settlement, persistence, or simultaneous multiplayer flows against multiple real authenticated accounts.
+This repository is still under development and is **not yet a verified production release**. The current Playwright suite covers guest entry, visible world rendering, sprite loading, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, and the trade purchase UI/RPC call using mocked Supabase clients. It does not yet prove the complete account, trade settlement, persistence, or simultaneous multiplayer flows against multiple real authenticated accounts.
 
 Online chunk persistence and presence are implemented in the client, but need dedicated authenticated multi-client verification. The database now limits mining RPC frequency and restricts game RPC execution to authenticated users; these protections still need end-to-end testing with real accounts. Presence is a lightweight synchronization feature, not an authoritative multiplayer game server or anti-cheat system. Payment/top-up features are not included.
 
