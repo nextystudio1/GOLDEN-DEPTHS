@@ -8,7 +8,7 @@ GOLDEN DEPTHS is an original browser-based 2D side-view mining sandbox prototype
 - Expanded 360 × 120 tile procedural world with caves, ore layers, pixel-art surface trees and four biome palettes: Verdant Fields, Amber Dunes, Frost Hollow and Ember Depths.
 - Full-world map overlay with a live player-position marker.
 - Slime encounters, health and respawn.
-- Backpack, local guest progress, crafting recipes, selling and pickaxe upgrades.
+- Backpack, local guest progress, crafting recipes, selling and a pickaxe shop with visible upgrade pricing.
 - Supabase account registration/login and server-side mining, inventory, gold and upgrade RPCs.
 - Player-to-player trade offers with create, accept and cancel RPCs.
 - Online world chunk save/load, conflict-aware saves, and basic player-position/world-change synchronization.
