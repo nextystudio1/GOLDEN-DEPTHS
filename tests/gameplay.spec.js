@@ -194,7 +194,7 @@ test('guest can open the live world events panel', async ({ page }) => {
 });
 
 
-test('online trade panel loads offers and calls the accept RPC', async ({ page }) => {
+test('nearby player can be selected and sent a direct trade request', async ({ page }) => {
   const mockClient = `
     window.__SUPABASE_CALLS = [];
     window.supabase = {
@@ -205,8 +205,9 @@ test('online trade panel loads offers and calls the accept RPC', async ({ page }
         },
         rpc: async (name, args) => {
           window.__SUPABASE_CALLS.push({ name, args });
-          if (name === 'golden_start') return { data: { gold: 1000, level: 1, pickaxe_level: 1 }, error: null };
-          return { data: { offer_id: 'offer-1', item_code: 'copper_ore', quantity: 2, gold_paid: 80 }, error: null };
+          if (name === 'golden_start') return { data: { gold: 1000, level: 1, pickaxe_level: 1, world_x: 100, world_y: 18 }, error: null };
+          if (name === 'golden_player_trade_request') return { data: { trade_id: 'direct-trade-1', status: 'pending' }, error: null };
+          return { data: {}, error: null };
         },
         from: (table) => {
           const query = {
@@ -214,12 +215,12 @@ test('online trade panel loads offers and calls the accept RPC', async ({ page }
             eq() { return query; },
             order() { return query; },
             limit() { return query; },
-            maybeSingle() { return Promise.resolve({ data: { gold: 1000, level: 1, pickaxe_level: 1 }, error: null }); },
+            maybeSingle() { return Promise.resolve({ data: table === 'golden_player_state' ? { gold: 1000, level: 1, pickaxe_level: 1 } : null, error: null }); },
             then(resolve, reject) {
-              const data = table === 'golden_trade_offers' ? [{
-                id: 'offer-1', seller_id: '00000000-0000-0000-0000-000000000999',
-                item_code: 'copper_ore', quantity: 2, gold_price: 80,
-                created_at: new Date().toISOString()
+              const data = table === 'golden_player_presence' ? [{
+                user_id: '00000000-0000-0000-0000-000000000999',
+                world_id: 'main', x: 102, y: 18, facing: -1, animation: 'idle',
+                last_seen: new Date().toISOString()
               }] : [];
               return Promise.resolve({ data, error: null }).then(resolve, reject);
             }
@@ -236,13 +237,14 @@ test('online trade panel loads offers and calls the accept RPC', async ({ page }
   );
   await page.goto('http://127.0.0.1:4173/');
   await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
-  await page.locator('#tradeToggle').click();
-  await expect(page.locator('#tradeList')).toContainText('Copper Ore ×2');
-  await page.locator('#tradeList button').filter({ hasText: 'BELI' }).click();
-  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_trade_accept' && x.args.p_offer_id === 'offer-1'))).toBeTruthy();
-  await expect(page.locator('#toast')).toContainText('Transaksi berhasil');
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__.player().x)).toBeGreaterThan(0);
+  const camera = await page.evaluate(() => window.__GD_TEST__.camera());
+  await page.mouse.click(102 * 24 - camera.x, 18 * 24 - camera.y);
+  await expect(page.locator('#playerAction')).toBeVisible();
+  await page.locator('#playerTradeRequest').click();
+  await expect.poll(() => page.evaluate(() => window.__SUPABASE_CALLS.some(x => x.name === 'golden_player_trade_request' && x.args.p_target === '00000000-0000-0000-0000-000000000999'))).toBeTruthy();
+  await expect(page.locator('#toast')).toContainText('Permintaan trade dikirim');
 });
-
 
 test('landscape play controls move the player and remain on screen', async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
