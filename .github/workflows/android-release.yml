@@ -1,13 +1,23 @@
-name: Build Golden Depths Play release
+name: Build VELMORA production release
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'index.html'
+      - 'config.js'
+      - 'privacy.html'
+      - 'account-deletion.html'
+      - 'assets/**'
+      - '.github/workflows/android-release.yml'
 
 permissions:
   contents: read
 
 jobs:
-  signed-play-bundle:
+  signed-production-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -34,45 +44,68 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Check signing secrets and prepare upload key
+      - name: Prepare release signing key
         id: signing
         env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Release signing is not configured. Add all four ANDROID_* repository secrets before building a signed AAB."
-            exit 1
+          set -euo pipefail
+          if [[ -n "$KEYSTORE_BASE64" && -n "$STORE_PASSWORD" && -n "$KEY_PASSWORD" && -n "$KEY_ALIAS" ]]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/velmora-release.jks"
+            echo "generated=false" >> "$GITHUB_OUTPUT"
+          else
+            STORE_PASSWORD="$(openssl rand -hex 24)"
+            KEY_PASSWORD="$STORE_PASSWORD"
+            KEY_ALIAS="velmora-upload"
+            keytool -genkeypair -keystore "$RUNNER_TEMP/velmora-release.jks" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" -alias "$KEY_ALIAS" -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=VELMORA, OU=Android, O=Nexty Studio, L=Medan, ST=North Sumatra, C=ID"
+            {
+              echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+              echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD"
+              echo "ANDROID_KEY_ALIAS=$KEY_ALIAS"
+            } > "$RUNNER_TEMP/SIGNING-CREDENTIALS.txt"
+            echo "generated=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/golden-depths-upload.jks"
-          keytool -list -keystore "$RUNNER_TEMP/golden-depths-upload.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-          echo "ready=true" >> "$GITHUB_OUTPUT"
+          test -s "$RUNNER_TEMP/velmora-release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/velmora-release.jks" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          {
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/velmora-release.jks"
+            echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+            echo "ANDROID_KEY_ALIAS=$KEY_ALIAS"
+            echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
       - name: Bundle complete game into Android assets
-        if: steps.signing.outputs.ready == 'true'
         run: |
           mkdir -p android/app/src/main/assets/game/assets
           cp index.html config.js privacy.html account-deletion.html android/app/src/main/assets/game/
           cp assets/*.svg android/app/src/main/assets/game/assets/
 
-      - name: Build signed Play bundle
-        if: steps.signing.outputs.ready == 'true'
+      - name: Build signed production APK and Play bundle
         working-directory: android
-        env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/golden-depths-upload.jks
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: gradle --no-daemon bundleRelease
+        run: gradle --no-daemon --stacktrace assembleRelease bundleRelease
 
-      - name: Upload signed AAB
-        if: steps.signing.outputs.ready == 'true'
+      - name: Assemble production package
+        env:
+          GENERATED_KEY: ${{ steps.signing.outputs.generated }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-package
+          cp android/app/build/outputs/apk/release/app-release.apk release-package/VELMORA-0.3.0-release.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab release-package/VELMORA-0.3.0-release.aab
+          if [[ "$GENERATED_KEY" == "true" ]]; then
+            cp "$RUNNER_TEMP/velmora-release.jks" release-package/VELMORA-release-key.jks
+            cp "$RUNNER_TEMP/SIGNING-CREDENTIALS.txt" release-package/SIGNING-CREDENTIALS.txt
+          fi
+          (cd release-package && sha256sum VELMORA-0.3.0-release.apk VELMORA-0.3.0-release.aab > SHA256SUMS.txt)
+          cd release-package && zip -9 ../VELMORA-0.3.0-PRODUCTION.zip *
+
+      - name: Upload production APK, AAB and signing backup
         uses: actions/upload-artifact@v4
         with:
-          name: golden-depths-play-release-aab
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          name: velmora-production-release
+          path: VELMORA-0.3.0-PRODUCTION.zip
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
