@@ -188,7 +188,7 @@ async function renderTradePanel(content){
  if(!trades?.length)addText(content,'p','Belum ada permintaan trade aktif.','panel-note');
  const otherIds=[...new Set((trades||[]).map(t=>t.sender_id===onlineUser.id?t.receiver_id:t.sender_id))];
  let names=new Map();
- if(otherIds.length){const p=await sb.from('player_profiles').select('user_id,display_name').in('user_id',otherIds);names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]))}
+ if(otherIds.length){const p=await sb.rpc('orbit_get_public_profiles',{p_user_ids:otherIds});names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]))}
  const [itemRes,invRes]=await Promise.all([sb.from('item_catalog').select('item_id,display_name').eq('is_tradeable',true),sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id)]);
  const tradeItems=itemRes.data||[],owned=(invRes.data||[]).filter(x=>x.quantity>0&&tradeItems.some(i=>i.item_id===x.item_id));
  const itemNames=new Map(tradeItems.map(i=>[i.item_id,i.display_name]));
@@ -269,7 +269,7 @@ async function refreshMarketPanel(content){
  const itemNames=new Map(items.map(x=>[x.item_id,x.display_name]));
  const profileIds=[...new Set(listings.map(x=>x.seller_id))];
  let profiles=[];
- if(profileIds.length){const p=await sb.from('player_profiles').select('user_id,display_name').in('user_id',profileIds);profiles=p.data||[]}
+ if(profileIds.length){const p=await sb.rpc('orbit_get_public_profiles',{p_user_ids:profileIds});profiles=p.data||[]}
  const profileNames=new Map(profiles.map(x=>[x.user_id,x.display_name]));
  addText(content,'p','📦 Pasang penjualan','panel-note');
  const select=document.createElement('select');select.className='world-input';
