@@ -543,6 +543,26 @@ test('guest can choose a named biome mine before entering gameplay', async ({ pa
   });
 });
 
+
+test('guest mine blocks persist when reopening the same named world', async ({ page }) => {
+  await page.setViewportSize({ width: 915, height: 412 });
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
+  const target = await page.evaluate(() => window.__GD_TEST__.findReachableBlock());
+  expect(target).not.toBeNull();
+  await holdMineBlock(page, 1500);
+  await expect.poll(() => page.evaluate(({x,y}) => window.__GD_TEST__.tileAt(x,y), target)).toBe(-1);
+  const afterMining = await page.evaluate(() => window.__GD_TEST__.worldTiles());
+  await page.reload();
+  await page.locator('#play').click();
+  await page.locator('#guest').click();
+  await enterWorldFromLobby(page);
+  expect(await page.evaluate(() => window.__GD_TEST__.worldTiles())).toBe(afterMining);
+  expect(await page.evaluate(({x,y}) => window.__GD_TEST__.tileAt(x,y), target)).toBe(-1);
+});
+
 test('online player can create and enter a named mine', async ({ page }) => {
   const mockClient = `
     window.__SUPABASE_CALLS = [];
