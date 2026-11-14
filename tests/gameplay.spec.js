@@ -389,12 +389,11 @@ test('in-game account deletion requires the typed confirmation word', async ({ p
   await expect(page.locator('#game')).toBeVisible({ timeout: 8000 });
   await page.locator('#accountToggle').click();
   await expect(page.locator('#accountPanel')).toBeVisible();
-  const deleteButtonState = await page.locator('#accountDeleteOpen').evaluate(el => ({
-    handler: typeof el.onclick,
-    display: getComputedStyle(el).display,
-    pointerEvents: getComputedStyle(el).pointerEvents,
-    hitTarget: document.elementFromPoint(el.getBoundingClientRect().left + 5, el.getBoundingClientRect().top + 5)?.id
-  }));
+  const deleteButtonState = await page.locator('#accountDeleteOpen').evaluate(el => {
+    const r = el.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { handler: typeof el.onclick, display: getComputedStyle(el).display, pointerEvents: getComputedStyle(el).pointerEvents, rect: {x:r.x,y:r.y,w:r.width,h:r.height}, hitTag: hit?.tagName, hitId: hit?.id };
+  });
   console.log('account delete control state', deleteButtonState);
   await page.locator('#accountDeleteOpen').click();
   await expect(page.locator('#accountDeletePanel')).toBeVisible();
