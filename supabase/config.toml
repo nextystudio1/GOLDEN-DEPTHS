@@ -1,0 +1,10 @@
+project_id = "osdudsxjzcrgopaslhcz"
+
+[functions.nexty-admin-overview]
+verify_jwt = true
+
+[functions.admob-reward-ssv]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = true
