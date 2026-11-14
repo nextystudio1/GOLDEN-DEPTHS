@@ -54,6 +54,8 @@ test('guest can enter a visible playable world and mine a block', async ({ page 
   expect(errors, 'Browser runtime errors before frame assertion').toEqual([]);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.frames || 0)).toBeGreaterThan(3);
   await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.tilesDrawn || 0)).toBeGreaterThan(10);
+  await expect.poll(() => page.evaluate(() => window.__GD_TEST__?.tileCache?.().hits || 0)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.__GD_TEST__.tileCache().chunks)).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/game-screen.png', fullPage: true });
 
   const before = await page.evaluate(() => {
