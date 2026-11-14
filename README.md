@@ -22,7 +22,7 @@ GOLDEN DEPTHS is an original browser-based 2D side-view mining sandbox prototype
 - Backend: Supabase Auth, Postgres, RPC and Realtime Postgres Changes.
 - Hosting and CI: GitHub Pages and GitHub Actions / Playwright.
 
-The browser client uses only the public Supabase anon key in `config.js`. Never put a service-role key or other server secret in this repository.
+The browser client uses only the public Supabase anon key in `config.js`. Never put a service-role key or other server secret in this repository. Game RPCs are restricted to authenticated users, player-owned rows use RLS, and public event reads are limited to currently published event windows.
 
 ## Test
 
@@ -38,7 +38,7 @@ GitHub Actions also runs static smoke checks and a browser gameplay test on push
 
 ## Important release status
 
-This repository is still under development and is **not yet a verified production release**. The current Playwright suite covers guest entry, visible world rendering, sprite loading, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, and the trade purchase UI/RPC call using mocked Supabase clients. It does not yet prove the complete account, trade settlement, persistence, or simultaneous multiplayer flows against multiple real authenticated accounts.
+This repository is still under development and is **not yet a verified production release**. The current six-test Playwright suite covers guest entry, visible world rendering, sprite loading, expanded world dimensions, mining, failed online mining behavior, online chunk-save wiring, the live event panel, full-world map and player marker, trade purchase UI/RPC wiring, and landscape controls/player movement using mocked Supabase clients. Database transaction checks have also exercised player start/duplicate usernames, trade escrow/accept/cancel and mining cooldown with temporary test records that were cleaned up afterward. These checks do not yet prove simultaneous multiplayer synchronization with multiple real authenticated clients.
 
 Online chunk persistence and presence are implemented in the client, but need dedicated authenticated multi-client verification. The database now limits mining RPC frequency and restricts game RPC execution to authenticated users; these protections still need end-to-end testing with real accounts. Presence is a lightweight synchronization feature, not an authoritative multiplayer game server or anti-cheat system. Payment/top-up features are not included.
 
