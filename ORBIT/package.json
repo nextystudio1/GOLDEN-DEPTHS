@@ -4,7 +4,7 @@
   "private": true,
   "description": "ORBIT original 2D sandbox game",
   "scripts": {
-    "check": "node --check game/game.js && node scripts/smoke-check.mjs"
+    "check": "node --check game/game.js && node --check game/audio.js && node scripts/smoke-check.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",
