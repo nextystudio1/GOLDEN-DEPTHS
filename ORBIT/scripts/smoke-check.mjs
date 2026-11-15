@@ -58,7 +58,7 @@ assert.ok(js.includes('function load(){return false}'), 'Local world loading mus
 assert.ok(js.includes('function switchLocalWorld(){toast('), 'Local world switching must be disabled');
 assert.ok(js.includes('function save(showToast=false)'), 'Background saves must not spam toast notifications');
 assert.ok(js.includes('b.onclick=()=>save(true)'), 'Manual save must still confirm success');
-assert.ok(js.includes("const uiPaused=!$('#modal').classList.contains('hidden')||!sideMenu.classList.contains('hidden')||document.hidden"), 'Gameplay must pause while menus or app background are active');
+assert.ok(js.includes("const uiPaused=!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||!$('#modal').classList.contains('hidden')"), 'Gameplay must pause unless online and while menus or app background are active');
 assert.ok(js.includes('addEventListener(\'blur\',clearControls)'), 'Controls must reset when the app loses focus');
 assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'Controls must reset when app is backgrounded');
 assert.ok(js.includes("positionTimer=setInterval(()=>{if(!document.hidden&&worldChannel&&onlineUser)syncOnlinePosition()},1000)"), 'Online position sync must pause in background and avoid excessive polling');
