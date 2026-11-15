@@ -118,3 +118,6 @@ assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop mus
 assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');
 
 assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Offline world progress must save immediately when the app is backgrounded');
+
+assert.ok(js.includes("addEventListener('offline',()=>{clearControls();toast('Koneksi terputus"), 'Offline event must stop controls and inform the player');
+assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!onlineUser)return;lastPositionSyncKey='';loadedChunkKeys=new Set();ensureNearbyChunks().then(()=>syncOnlinePosition())"), 'Online world must refresh chunks and position after network recovery');
