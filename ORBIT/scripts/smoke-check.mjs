@@ -55,7 +55,7 @@ assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels ar
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
 assert.ok(!js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({coins,equippedTool}))"), 'Player progression must never be saved locally');
 assert.ok(js.includes('function load(){return false}'), 'Local world loading must be disabled');
-assert.ok(js.includes('function switchLocalWorld(){toast('), 'Local world switching must be disabled');
+assert.ok(!js.includes('switchLocalWorld'), 'Local world switching must be absent');
 assert.ok(js.includes('function save(showToast=false)'), 'Background saves must not spam toast notifications');
 assert.ok(js.includes("function save(showToast=false){if(showToast)toast('Progres ORBIT disimpan otomatis oleh server saat online')}"), 'Manual save must not create a local save path');
 assert.ok(js.includes("const uiPaused=!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||!$('#modal').classList.contains('hidden')"), 'Gameplay must pause unless online and while menus or app background are active');
