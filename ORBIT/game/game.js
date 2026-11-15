@@ -159,7 +159,7 @@ function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content
    addText(content,'p','Belum ada resep yang tersedia.','panel-note');
   }else{
    recipes.forEach(recipe=>{
-    const row=document.createElement('div');row.className='panel-row';
+    const row=document.createElement('div');row.className='panel-row player-list-row';
     const span=document.createElement('span');
     const ingredients=(recipe.ingredients||[]).map(item=>item.quantity+' '+item.display_name).join(' + ');
     span.textContent=(recipe.output_name||recipe.output_item_id)+' ×'+recipe.output_quantity+' • '+ingredients;

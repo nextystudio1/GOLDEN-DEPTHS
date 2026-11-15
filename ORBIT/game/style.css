@@ -283,3 +283,10 @@ html,body{font-family:"Trebuchet MS",Arial,sans-serif;background:#6e9fbd}
 .inventory-item.selected{outline:2px solid #ffe58e;outline-offset:1px;background:#668f73;}
 .inventory-detail{padding:7px 9px;border:1px solid #24515a;background:#285f66;color:#fff1c8;border-radius:3px;}
 .inventory-grid{overscroll-behavior:contain;}
+
+/* Expandable social profiles remain readable inside the compact player list. */
+.player-list-row{flex-wrap:wrap;}
+.player-profile-details{flex:1 1 100%;width:100%;padding:7px 9px;border:1px solid #24515a;background:#285f66;color:#fff1c8;border-radius:3px;}
+.player-profile-details summary{cursor:pointer;font-weight:800;color:#ffe28a;}
+.player-profile-details .panel-note{margin:5px 0 0;color:#e4e9c8;}
+.player-own-profile{display:grid;gap:5px;padding:9px;border:2px solid #1b4b56;background:#285f66;color:#fff1c8;border-radius:3px;}
