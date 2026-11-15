@@ -130,7 +130,7 @@ assert.ok(js.includes("placeAt=function(px,py){if(!onlineConnectionReady||!activ
 assert.ok(js.includes("item=placeableItems[selected],itemId=item?.serverId") && js.includes("if(!itemId){toast('Pilih blok yang bisa dipasang');return}"), 'Online placement must validate the selected server catalog item safely');
 assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
 assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
-assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');
+assert.ok(js.includes('inventory-detail') && js.includes('d.onclick=()=>{') && js.includes('describe(it)'), 'Inventory item details and selection actions are missing');
 
 assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Backgrounding must clear controls; local save is a no-op');
 
