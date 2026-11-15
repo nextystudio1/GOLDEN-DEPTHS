@@ -1,10 +1,5 @@
 name: ORBIT Android Build
 on:
-  push:
-    branches: [orbit-development]
-    paths:
-      - 'ORBIT/**'
-      - '.github/workflows/orbit-android.yml'
   workflow_dispatch:
 permissions:
   contents: read

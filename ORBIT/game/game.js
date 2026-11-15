@@ -12,7 +12,7 @@ const catalog=[
 {id:'stonepick',name:'Stone Pickaxe',icon:'🪨',tile:0,stack:1,desc:'Pickaxe batu untuk tahap awal.'},
 {id:'crystalpick',name:'Crystal Pickaxe',icon:'💠',tile:0,stack:1,desc:'Pickaxe kristal dengan kecepatan tinggi.'}
 ];
-const placeableItems=catalog.filter(item=>['grass','dirt','stone'].includes(item.id));
+const placeableItems=catalog.filter(item=>item.placeable===true || ['grass','dirt','stone'].includes(item.id));
 const particles=[];
 const readJSON=()=>null;
 let map=Array.from({length:WH},()=>Array(WW).fill(0)),inv={},selected=0,tool='mine',cameraX=0,cameraY=0,screenW=1,screenH=1,last=0,toastTimer=0,coins=0;
@@ -368,11 +368,29 @@ async function syncOnlineInventory(){
  const known=new Set(catalog.map(item=>item.id));
  for(const row of catalogResult.data||[]){
   const key=mapIds[row.item_id]||row.item_id;
-  if(known.has(key))continue;
   const meta=row.item_data&&typeof row.item_data==='object'?row.item_data:{};
-  catalog.push({id:key,serverId:row.item_id,name:row.display_name||row.item_id,icon:iconForCategory[row.category]||'📦',tile:Number.isInteger(meta.tile)?meta.tile:0,stack:row.stack_limit||999,desc:meta.description||meta.function||('Kategori: '+(row.category||'item')+' • Kelangkaan: '+(row.rarity||'common')),category:row.category||'item',rarity:row.rarity||'common',placeable:!!row.is_placeable,tradeable:!!row.is_tradeable});
-  known.add(key);
+  const existing=catalog.find(item=>item.id===key);
+  const usage=meta.description||meta.function||
+   (meta['用途']==='crafting'?'Bahan untuk membuat item lain.':
+    meta['用途']==='farming'?'Benih untuk kegiatan pertanian.':
+    meta.tool==='pickaxe'?'Alat tambang • Kecepatan '+(meta.mine_speed||1)+'x':'');
+  const item=existing||{id:key,icon:iconForCategory[row.category]||'📦'};
+  Object.assign(item,{
+   serverId:row.item_id,
+   name:row.display_name||item.name||row.item_id,
+   tile:Number.isInteger(meta.tile)?meta.tile:(item.tile||0),
+   stack:row.stack_limit||item.stack||999,
+   desc:usage||item.desc||('Kategori: '+(row.category||'item')+' • Kelangkaan: '+(row.rarity||'common')),
+   category:row.category||item.category||'item',
+   rarity:row.rarity||item.rarity||'common',
+   placeable:!!row.is_placeable,
+   tradeable:!!row.is_tradeable,
+   itemData:meta
+  });
+  if(!existing){catalog.push(item);known.add(key)}
  }
+ placeableItems.splice(0,placeableItems.length,...catalog.filter(item=>item.placeable===true&&Number.isInteger(item.tile)&&item.tile>=1&&item.tile<=3));
+ selected=Math.max(0,Math.min(selected,placeableItems.length-1));
  Object.keys(inv).forEach(k=>inv[k]=0);
  (inventoryResult.data||[]).forEach(row=>{const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity});
  renderHotbar();
@@ -382,7 +400,7 @@ async function syncOnlineInventory(){
 async function syncOnlinePosition(){if(!sb||!onlineUser||!activeWorldId||positionSyncBusy||document.hidden)return false;const worldId=activeWorldId;const x=Math.max(0,Math.min(WW-1,Math.floor((player.x+player.w/2)/T))),y=Math.max(0,Math.min(WH-1,Math.floor((player.y+player.h/2)/T))),key=worldId+':'+x+','+y;if(key===lastPositionSyncKey)return true;positionSyncBusy=true;try{const {error}=await sb.rpc('orbit_update_position',{p_world_id:worldId,p_x:x,p_y:y});if(error){if(error.message!=='MOVEMENT_TOO_FAST')console.warn('position sync',error.message);return false}if(activeWorldId===worldId){lastPositionSyncKey=key;onlineSavedPosition={world_id:worldId,pos_x:x,pos_y:y}}return true}finally{positionSyncBusy=false}}
 
 mineAt=function(px,py,delta=0){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0||tx>=WW||ty<0||ty>=WH){resetMining();return}if(map[ty]?.[tx]===8){if(!advanceMining(tx,ty,delta))return;onlineActionBusy=true;sb.rpc('orbit_harvest_crop',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty}).then(async({data,error})=>{if(error){resetMining();toast(error.message.includes('CROP_NOT_READY')?'Tanaman belum siap, tunggu sampai tumbuh':'Panen gagal: '+error.message);return}window.ORBITAudio?.play('harvest');spawnBlockParticles(tx,ty,map[ty][tx]);spawnBlockParticles(tx,ty,8);map[ty][tx]=0;window.ORBITAudio?.play('break');resetMining();applyProgress(data);await syncOnlineInventory();toast('Panen berhasil: +2 Glow Seed • +8 XP')}).finally(()=>onlineActionBusy=false);return}if(!map[ty]?.[tx]||!advanceMining(tx,ty,delta))return;onlineActionBusy=true;sb.rpc('orbit_mine_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty}).then(async({data,error})=>{if(error){resetMining();if(error.message.includes('TOO_FAR'))toast('Dekati blok dahulu');else if(error.message.includes('AREA_CLAIMED'))toast('Area ini dilindungi pemain lain');else if(!error.message.includes('MINING_COOLDOWN'))toast('Tidak bisa menambang: '+error.message);return}map[ty][tx]=0;resetMining();applyProgress(data);await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
-placeAt=function(px,py){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T),items=['grass_block','soil_block','slate_block'];if(selected<0||selected>=items.length){toast('Item ini belum bisa dipasang');return}if(tx<0||tx>=WW||ty<0||ty>=WH){toast('Lokasi tidak valid');return}const overlaps=player.x<((tx+1)*T)&&player.x+player.w>(tx*T)&&player.y<((ty+1)*T)&&player.y+player.h>(ty*T);if(overlaps){toast('Tidak bisa memasang blok di tubuh pemain');return}onlineActionBusy=true;sb.rpc('orbit_place_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty,p_item_id:items[selected]}).then(async({data,error})=>{if(error){toast(error.message.includes('TOO_FAR')?'Dekati lokasi dahulu':error.message.includes('AREA_CLAIMED')?'Area ini dilindungi pemain lain':'Tidak bisa memasang: '+error.message);return}map[ty][tx]=data.tile_id;window.ORBITAudio?.play('place');spawnBlockParticles(tx,ty,data.tile_id);await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
+placeAt=function(px,py){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T),item=placeableItems[selected],itemId=item?.serverId||({grass:'grass_block',dirt:'soil_block',stone:'slate_block'}[item?.id]);if(!itemId){toast('Pilih blok yang bisa dipasang');return}if(tx<0||tx>=WW||ty<0||ty>=WH){toast('Lokasi tidak valid');return}const overlaps=player.x<((tx+1)*T)&&player.x+player.w>(tx*T)&&player.y<((ty+1)*T)&&player.y+player.h>(ty*T);if(overlaps){toast('Tidak bisa memasang blok di tubuh pemain');return}onlineActionBusy=true;sb.rpc('orbit_place_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty,p_item_id:itemId}).then(async({data,error})=>{if(error){toast(error.message.includes('TOO_FAR')?'Dekati lokasi dahulu':error.message.includes('AREA_CLAIMED')?'Area ini dilindungi pemain lain':'Tidak bisa memasang: '+error.message);return}map[ty][tx]=data.tile_id;window.ORBITAudio?.play('place');spawnBlockParticles(tx,ty,data.tile_id);await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
 async function refreshMarketPanel(content){
  if(!sb||!onlineUser){addText(content,'p','Login dahulu untuk memakai market.','panel-note');return}
  addText(content,'p','Jual dan beli item dari pemain lain. Semua pembayaran dan perpindahan item diproses oleh server.','panel-note');

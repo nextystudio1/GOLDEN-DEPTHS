@@ -120,7 +120,7 @@ console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gamepla
 
 assert.ok(js.includes('const placeableItems=catalog.filter'), 'Hotbar must only expose items supported by the placement system');
 assert.ok(js.includes("placeAt=function(px,py){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;"), 'Block placement must require an active online session');
-assert.ok(js.includes("items=['grass_block','soil_block','slate_block'];if(selected<0||selected>=items.length)"), 'Online placement must reject unsupported hotbar items safely');
+assert.ok(js.includes("item=placeableItems[selected],itemId=item?.serverId") && js.includes("if(!itemId){toast('Pilih blok yang bisa dipasang');return}"), 'Online placement must validate the selected server catalog item safely');
 assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
 assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
 assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');
@@ -154,6 +154,9 @@ assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!
 assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk menanam')"), 'Planting must require an active online connection');
 
 assert.ok(js.includes("sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data')"), 'Backpack must load item definitions from the server catalog');
-assert.ok(js.includes("catalog.push({id:key,serverId:row.item_id"), 'New server catalog entries must be registered with their metadata');
+assert.ok(js.includes('serverId:row.item_id') && js.includes('catalog.push(item)'), 'Server catalog metadata must be attached to both known and newly discovered items');
+assert.ok(js.includes('placeableItems.splice(0,placeableItems.length') && js.includes('item.placeable===true'), 'Hotbar placeable items must refresh from authoritative server catalog metadata');
+assert.ok(js.includes('p_item_id:itemId'), 'Placement must send the selected catalog item ID to the server');
+assert.ok(js.includes("meta['用途']==='crafting'") && js.includes("meta.tool==='pickaxe'"), 'Item details must explain crafting and tool functions from server metadata');
 assert.ok(js.includes("const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity"), 'Inventory sync must retain newly added server item IDs');
 assert.ok(js.includes(".range(0,999)"), 'Catalog reads must be bounded for scale');
