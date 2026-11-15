@@ -82,7 +82,10 @@ assert.ok(!js.includes("localStorage.setItem('orbit_v2_world_'"), 'World maps mu
 assert.ok(!js.includes('}\\nfunction rectBlocked('), 'Collision helper contains a literal escaped newline');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
 assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is missing');
-assert.ok(js.includes('builtInItemIcons.has(id)') && js.includes("getItem(id)?.icon||'📦'"), 'New server catalog items must display a category icon when no vector asset exists');
+assert.ok(js.includes('builtInItemIcons.has(id)') && js.includes('itemOverride=null') && js.includes("item?.icon||'📦'"), 'New server catalog and search items must display their category icons when no vector asset exists');
+assert.ok(js.includes('async function fetchAllPlayerInventoryRows()') && js.includes('.range(offset,offset+pageSize-1)'), 'Inventory sync must page through all owned item rows instead of truncating at the database row limit');
+assert.ok(js.includes('async function fetchCatalogRowsByIds(itemIds)') && js.includes('pageSize=100'), 'Inventory catalog lookups must be chunked to keep large item lists within query limits');
+assert.ok(js.includes('makeItemIcon(it.id,it)'), 'Search results must render icons from their returned item metadata');
 assert.ok(js.includes("catalog.filter(it=>it.category==='tool'") && js.includes("it.serverId==='starter_pickaxe'"), 'Equipment picker must discover owned tools from the server catalog instead of a fixed list');
 for (const tileId of [9,10,11,12]) assert.ok(js.includes(tileId+':'), 'Missing renderer or mining timing for crafted block tile '+tileId);
 assert.ok(js.includes("sb.rpc('orbit_list_crafting_recipes'") && js.includes('recipe.ingredients') && js.includes('recipe.output_name'), 'Workshop recipes must load dynamically from server data');
