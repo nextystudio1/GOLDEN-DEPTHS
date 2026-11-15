@@ -86,6 +86,7 @@ function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content
  if(!sb||!onlineUser){
   addText(content,'p','Login diperlukan untuk melihat resep server.','panel-note');
  }else{
+  (async()=>{
   const {data:recipes,error:recipeError}=await sb.rpc('orbit_list_crafting_recipes');
   if(recipeError||!Array.isArray(recipes)){
    addText(content,'p','Resep gagal dimuat dari server. Periksa koneksi lalu buka Workshop lagi.','panel-note');
@@ -111,6 +112,7 @@ function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content
     row.append(span,btn);content.append(row);
    });
   }
+  })();
  }
   const farmRow=document.createElement('div');farmRow.className='panel-row';
   const farmLabel=document.createElement('span');farmLabel.textContent='🌱 Glow Seed Farm • tumbuh dalam 5 menit';
