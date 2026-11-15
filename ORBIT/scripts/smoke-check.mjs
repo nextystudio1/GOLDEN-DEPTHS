@@ -158,6 +158,7 @@ assert.ok(js.includes("status==='CHANNEL_ERROR'||status==='TIMED_OUT'){onlineCon
 assert.ok(!js.includes('localPlants') && !js.includes('worlds=[]'), 'No local crop or world state may remain');
 assert.ok(!js.includes('oldMineAt') && !js.includes('oldPlaceAt'), 'Mining and placement must not fall back to local handlers');
 assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk crafting')"), 'Crafting must require an active online connection');
+assert.ok(js.includes("sb.rpc('orbit_list_crafting_recipes'") && js.includes('recipe.ingredients') && js.includes('recipe.output_name'), 'Workshop must load recipe definitions dynamically from the server');
 assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk menanam')"), 'Planting must require an active online connection');
 
 assert.ok(js.includes("sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data')"), 'Backpack must load item definitions from the server catalog');

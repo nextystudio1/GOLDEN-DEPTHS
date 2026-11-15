@@ -83,33 +83,35 @@ function renderInventory(){let e=$('#modal-content');e.replaceChildren();let gri
 function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content=$('#modal-content');content.replaceChildren();modal.classList.remove('hidden');modal.classList.toggle('inventory-mode',name==='inventory');modal.classList.remove('sheet-expanded');if(name==='inventory'){title.textContent='🎒 Backpack';renderInventory()}else if(name==='craft'){
  title.textContent='⚒ Workshop';
  const note=document.createElement('p');note.className='panel-note';note.textContent='Semua resep diproses dan disimpan oleh server ORBIT.';content.append(note);
- const recipes=[
-  {id:'glow_seed',label:'Glow Seed ×2 • 4 Soil + 1 Wood',inputs:[['dirt',4],['wood',1]],output:'seed',amount:2},
-  {id:'stone_pickaxe',label:'Stone Pickaxe ×1 • 12 Stone + 8 Wood',inputs:[['stone',12],['wood',8]],output:'stonepick',amount:1},
-  {id:'copper_pickaxe',label:'Copper Pickaxe ×1 • 12 Copper + 8 Wood',inputs:[['copper',12],['wood',8]],output:'pickaxe',amount:1},
-  {id:'crystal_pickaxe',label:'Crystal Pickaxe ×1 • 10 Crystal + 12 Wood',inputs:[['crystal',10],['wood',12]],output:'crystalpick',amount:1},
-  {id:'amber_plank_block',label:'Amber Plank Block ×2 • 3 Wood + 1 Soil',inputs:[['wood',3],['dirt',1]],output:'amber_plank_block',amount:2},
-  {id:'copper_brick_block',label:'Copper Brick Block ×2 • 4 Copper + 2 Wood',inputs:[['copper',4],['wood',2]],output:'copper_brick_block',amount:2},
-  {id:'crystal_glass_block',label:'Crystal Glass Block ×1 • 3 Crystal + 2 Wood',inputs:[['crystal',3],['wood',2]],output:'crystal_glass_block',amount:1},
-  {id:'moss_stone_block',label:'Moss Stone Block ×2 • 3 Stone + 1 Glow Seed',inputs:[['stone',3],['seed',1]],output:'moss_stone_block',amount:2}
- ];
- recipes.forEach(recipe=>{
-  const row=document.createElement('div');row.className='panel-row';
-  const span=document.createElement('span');span.textContent=recipe.label;
-  const btn=document.createElement('button');btn.textContent='BUAT';
-  btn.onclick=async()=>{
-   if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk crafting');return}
-   btn.disabled=true;
-   if(activeWorldId&&onlineUser){
-    const {data,error}=await sb.rpc('orbit_craft_item',{p_recipe_id:recipe.id});
-    btn.disabled=false;
-    if(error){toast(error.message.includes('MATERIALS_MISSING')?'Material belum cukup':error.message.includes('OUTPUT_STACK_LIMIT')?'Kapasitas item sudah penuh':'Craft gagal: '+error.message);return}
-    await syncOnlineInventory();toast('Berhasil membuat '+({seed:'Glow Seed',stonepick:'Stone Pickaxe',pickaxe:'Copper Pickaxe',crystalpick:'Crystal Pickaxe',amber_plank_block:'Amber Plank Block',copper_brick_block:'Copper Brick Block',crystal_glass_block:'Crystal Glass Block',moss_stone_block:'Moss Stone Block'}[recipe.output]||'item'));openPanel('craft');return;
-   }
-   btn.disabled=false;
-  };
-  row.append(span,btn);content.append(row);
- });
+ if(!sb||!onlineUser){
+  addText(content,'p','Login diperlukan untuk melihat resep server.','panel-note');
+ }else{
+  const {data:recipes,error:recipeError}=await sb.rpc('orbit_list_crafting_recipes');
+  if(recipeError||!Array.isArray(recipes)){
+   addText(content,'p','Resep gagal dimuat dari server. Periksa koneksi lalu buka Workshop lagi.','panel-note');
+  }else if(!recipes.length){
+   addText(content,'p','Belum ada resep yang tersedia.','panel-note');
+  }else{
+   recipes.forEach(recipe=>{
+    const row=document.createElement('div');row.className='panel-row';
+    const span=document.createElement('span');
+    const ingredients=(recipe.ingredients||[]).map(item=>item.quantity+' '+item.display_name).join(' + ');
+    span.textContent=(recipe.output_name||recipe.output_item_id)+' ×'+recipe.output_quantity+' • '+ingredients;
+    const btn=document.createElement('button');btn.textContent='BUAT';
+    btn.onclick=async()=>{
+     if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk crafting');return}
+     btn.disabled=true;
+     const {data,error}=await sb.rpc('orbit_craft_item',{p_recipe_id:recipe.recipe_id});
+     btn.disabled=false;
+     if(error){const m=error.message||'';toast(m.includes('MATERIALS_MISSING')?'Material belum cukup':m.includes('OUTPUT_STACK_LIMIT')?'Kapasitas item sudah penuh':'Craft gagal: '+m);return}
+     await syncOnlineInventory();
+     toast('Berhasil membuat '+(data?.item_name||recipe.output_name||'item'));
+     openPanel('craft');
+    };
+    row.append(span,btn);content.append(row);
+   });
+  }
+ }
   const farmRow=document.createElement('div');farmRow.className='panel-row';
   const farmLabel=document.createElement('span');farmLabel.textContent='🌱 Glow Seed Farm • tumbuh dalam 5 menit';
   const plant=document.createElement('button');plant.textContent='TANAM DI DEPAN';plant.disabled=!onlineConnectionReady||!activeWorldId||!onlineUser;
