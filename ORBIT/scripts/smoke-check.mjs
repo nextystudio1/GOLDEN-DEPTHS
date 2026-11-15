@@ -135,6 +135,11 @@ assert.ok(releaseWorkflow.includes('apksigner') && releaseWorkflow.includes('jar
 assert.ok(releaseWorkflow.includes('workflow_dispatch:'), 'Production release must require an explicit manual dispatch');
 assert.ok(!releaseWorkflow.includes('keytool -genkeypair'), 'Production release must not silently generate a new signing identity');
 
+
+assert.ok(js.includes("addText(ownProfile,'b','👤 PROFIL PEMAINKU','')") && js.includes("'Level: '+($('#level')?.textContent||'1')"), 'Own player profile must show the server-backed name and progression summary');
+assert.ok(js.includes("const profile=document.createElement('details')") && js.includes("addText(profile,'summary','PROFIL PEMAIN')"), 'Online player rows must expose an expandable public profile summary');
+assert.ok(js.includes("p.animation==='walk'?'Sedang bergerak':'Sedang diam'"), 'Public player profile must display current presence activity');
+
 console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gameplay hooks, landscape and fullscreen build config.');
 
 assert.ok(js.includes('const placeableItems=catalog.filter'), 'Hotbar must only expose items supported by the placement system');

@@ -322,11 +322,15 @@ function refreshSocialPlayerList(){
   nearby.forEach(p=>{
    const row=document.createElement('div');row.className='panel-row';
    const label=document.createElement('span');label.textContent=(p.display_name||'Explorer')+' • '+p.distance+' blok';
+   const profile=document.createElement('details');profile.className='player-profile-details';
+   const profileSummary=addText(profile,'summary','PROFIL PEMAIN');
+   const profileInfo=addText(profile,'p',(p.display_name||'Explorer')+' • Online sekarang • '+(p.animation==='walk'?'Sedang bergerak':'Sedang diam')+' • Jarak '+p.distance+' blok','panel-note');
+   profile.setAttribute('aria-label','Profil pemain '+(p.display_name||'Explorer'));
    const request=addText(row,'button','AJAK TRADE');
    request.disabled=!onlineConnectionReady;
    request.title='Jarak perkiraan '+p.distance+' blok';
    request.onclick=()=>requestTradeWithPlayer(p.user_id);
-   row.prepend(label);socialPlayerListElement.append(row);
+   row.prepend(label);row.append(profile);socialPlayerListElement.append(row);
   });
  }
  async function renderTradePanel(content){
@@ -377,6 +381,12 @@ function authPanel(){const title=$('#modal-title'),content=$('#modal-content');t
  if(onlineUser){
   addText(content,'p','Login sebagai '+onlineUser.email,'panel-note');
   const status=addText(content,'div','Akun aktif • ID '+onlineUser.id.slice(0,8),'panel-row');
+  const ownProfile=document.createElement('section');ownProfile.className='panel-note player-own-profile';
+  addText(ownProfile,'b','👤 PROFIL PEMAINKU','');
+  addText(ownProfile,'div','Nama: '+(playerDisplayName||'Explorer'),'');
+  addText(ownProfile,'div','Level: '+($('#level')?.textContent||'1')+' • '+($('#xp')?.textContent||'0 XP'),'');
+  addText(ownProfile,'div','Koin: '+($('#coins')?.textContent||'0')+' • Alat: '+(equippedTool||'starter_pickaxe'),'');
+  content.append(ownProfile);
   if(activeWorldId){
    addText(content,'p','🛡️ Perlindungan area','panel-note');
    const claimStatus=addText(content,'p','Memeriksa status area…','panel-note');
