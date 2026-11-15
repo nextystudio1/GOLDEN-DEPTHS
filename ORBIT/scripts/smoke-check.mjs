@@ -42,14 +42,14 @@ assert.ok(js.includes('sheetHandle.addEventListener'), 'Backpack drag gesture is
 assert.ok(js.includes('loadOnlineSdk'), 'Online SDK loader is missing');
 assert.ok(js.includes("else{toast('Login berhasil');openPanel('social')}};"), 'Successful login must return to Social Hub and never auto-open World Gate');
 assert.ok(js.includes("else if(name==='social'){authPanel()}"), 'Social Hub must render real account, login, chat, claims and trade controls instead of a placeholder');
-assert.ok(js.includes("if(sb&&onlineUser)refreshWorldList(content)"), 'World Gate must load online worlds and the create-world action for signed-in players');
+assert.ok(js.includes("refreshWorldList(content)}else if(name==='social')"), 'World Gate must render only server-backed worlds');
 assert.ok(js.includes("const oldOpenPanel=openPanel;openPanel=function(name){if(name!=='worlds'&&name!=='social'&&name!=='market')return oldOpenPanel(name);"), 'Live menu dispatcher must route online panels through their feature handlers');
 assert.ok(js.includes("if(name==='social'){authPanel();return}"), 'Active Social Hub route must render account and multiplayer controls');
 assert.ok(js.includes("if(name==='market'){title.textContent='🏪 ORBIT Market';refreshMarketPanel(content);return}"), 'Active Market route must render player listings and transactions');
 assert.ok(js.includes("title.textContent='🌍 World Gate';refreshWorldList(content)"), 'Active World Gate route must load public online worlds');
 assert.ok(js.includes("Login dan pilih dunia online untuk mulai bermain. Progres disimpan di server."), 'Signed-in World Gate must explain online-only play');
 assert.ok(js.includes("const {error}=await sb.auth.signInWithPassword"), 'Manual sign-in action must remain available');
-assert.ok(!js.includes('Dunia lokal tersimpan di perangkat.'), 'World Gate must not advertise local worlds');
+assert.ok(!js.includes('Dunia lokal tersimpan di perangkat.') && !js.includes('switchLocalWorld'), 'World Gate must not advertise or switch to local worlds');
 assert.ok(!js.includes('Multiplayer online sedang dikembangkan.'), 'World Gate must not claim the online mode is still being developed');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
@@ -135,3 +135,8 @@ assert.ok(js.includes("if(!(await loadProfile())){activeWorldId=null;toast('Prof
 assert.ok(js.includes('return results.every(Boolean)}return true}'), 'World entry must fail closed if any required server chunk fails to load');
 assert.ok(js.includes("if(!(await syncOnlineInventory())){activeWorldId=null;toast('Inventaris server gagal dimuat."), 'World entry must require inventory data from the server');
 assert.ok(js.includes('async function syncOnlineInventory(){if(!sb||!onlineUser)return false;'), 'Inventory sync must report server failure instead of allowing local play');
+
+assert.ok(!js.includes('localPlants') && !js.includes('worlds=[]'), 'No local crop or world state may remain');
+assert.ok(!js.includes('oldMineAt') && !js.includes('oldPlaceAt'), 'Mining and placement must not fall back to local handlers');
+assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk crafting')"), 'Crafting must require an active online connection');
+assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk menanam')"), 'Planting must require an active online connection');
