@@ -57,7 +57,7 @@ assert.ok(!js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({
 assert.ok(js.includes('function load(){return false}'), 'Local world loading must be disabled');
 assert.ok(js.includes('function switchLocalWorld(){toast('), 'Local world switching must be disabled');
 assert.ok(js.includes('function save(showToast=false)'), 'Background saves must not spam toast notifications');
-assert.ok(js.includes('b.onclick=()=>save(true)'), 'Manual save must still confirm success');
+assert.ok(js.includes("function save(showToast=false){if(showToast)toast('Progres ORBIT disimpan otomatis oleh server saat online')}"), 'Manual save must not create a local save path');
 assert.ok(js.includes("const uiPaused=!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||!$('#modal').classList.contains('hidden')"), 'Gameplay must pause unless online and while menus or app background are active');
 assert.ok(js.includes('addEventListener(\'blur\',clearControls)'), 'Controls must reset when the app loses focus');
 assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'Controls must reset when app is backgrounded');
