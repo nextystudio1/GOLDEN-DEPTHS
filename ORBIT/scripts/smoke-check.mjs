@@ -116,3 +116,5 @@ assert.ok(js.includes("items=['grass_block','soil_block','slate_block'];if(selec
 assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
 assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
 assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');
+
+assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Offline world progress must save immediately when the app is backgrounded');
