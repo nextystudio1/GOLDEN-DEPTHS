@@ -53,9 +53,9 @@ assert.ok(js.includes('Login melalui Social Hub untuk melihat dan bergabung ke d
 assert.ok(!js.includes('Multiplayer online sedang dikembangkan.'), 'World Gate must not claim the online mode is still being developed');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
-assert.ok(js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({coins,equippedTool}))"), 'Offline player progression must persist across worlds');
-assert.ok(js.includes("inv=sharedInv&&typeof sharedInv==='object'?sharedInv:(saved.inv||{})"), 'Saved offline worlds must load shared player inventory');
-assert.ok(js.includes("if(sharedInv&&typeof sharedInv==='object')inv=sharedInv"), 'New offline worlds must inherit the shared player inventory');
+assert.ok(!js.includes("localStorage.setItem('orbit_v2_profile',JSON.stringify({coins,equippedTool}))"), 'Player progression must never be saved locally');
+assert.ok(js.includes('function load(){return false}'), 'Local world loading must be disabled');
+assert.ok(js.includes('function switchLocalWorld(){toast('), 'Local world switching must be disabled');
 assert.ok(js.includes('function save(showToast=false)'), 'Background saves must not spam toast notifications');
 assert.ok(js.includes('b.onclick=()=>save(true)'), 'Manual save must still confirm success');
 assert.ok(js.includes("const uiPaused=!$('#modal').classList.contains('hidden')||!sideMenu.classList.contains('hidden')||document.hidden"), 'Gameplay must pause while menus or app background are active');
@@ -119,5 +119,10 @@ assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describ
 
 assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Offline world progress must save immediately when the app is backgrounded');
 
-assert.ok(js.includes("addEventListener('offline',()=>{clearControls();toast('Koneksi terputus"), 'Offline event must stop controls and inform the player');
-assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!onlineUser)return;lastPositionSyncKey='';loadedChunkKeys=new Set();ensureNearbyChunks().then(()=>syncOnlinePosition())"), 'Online world must refresh chunks and position after network recovery');
+assert.ok(js.includes("addEventListener('offline',()=>{clearControls();onlineConnectionReady=false;"), 'Network loss must pause gameplay and disable online readiness');
+assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!onlineUser||!sb)return;"), 'Online world must rejoin server after network recovery');
+
+assert.ok(js.includes('onlineConnectionReady=false') && js.includes('if(!onlineConnectionReady||!activeWorldId||!navigator.onLine)'), 'Gameplay must remain locked until a live server channel is connected');
+assert.ok(js.includes('ORBIT hanya dapat dimainkan secara online'), 'Disconnected state must clearly communicate online-only gameplay');
+assert.ok(js.includes('function save(showToast=false){if(showToast)toast(\'Progres ORBIT disimpan otomatis oleh server saat online\')}'), 'Local save must be disabled');
+assert.ok(!js.includes(\"toast('Mode offline aktif\"), 'No offline-mode messaging or fallback may remain');
