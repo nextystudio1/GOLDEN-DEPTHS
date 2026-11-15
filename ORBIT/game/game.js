@@ -396,7 +396,19 @@ function initializeOnlineClient(){
  if(!window.supabase||!cfg?.supabaseUrl||!cfg?.supabaseKey)return;
  sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey);
  sb.auth.getSession().then(async({data,error})=>{if(error){toast('Online belum tersambung');return}onlineUser=data.session?.user||null;setAccountLabel();if(onlineUser)await loadProfile()}).catch(()=>toast('Gagal menyambung ke server'));
- sb.auth.onAuthStateChange(async(_event,session)=>{const nextUser=session?.user||null;if(onlineUser?.id!==nextUser?.id){if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}if(positionTimer){clearInterval(positionTimer);positionTimer=null}if(worldChannel){sb.removeChannel(worldChannel);worldChannel=null}remotePlayers=[];const localName=activeWorldId?'MEADOW-01':activeWorld;activeWorldId=null;onlineSavedPosition=null;switchLocalWorld(localName,true)}onlineConnectionReady=false;activeWorldId=null;onlineSavedPosition=null;activeWorld='ONLINE';inv={};remotePlayers=[];$('#world-name').textContent='LOGIN';$('#coins').textContent='0'}onlineUser=nextUser;setAccountLabel();if(onlineUser)await loadProfile();else{equippedTool='starter_pickaxe';toast('Login diperlukan untuk bermain online')}});
+ sb.auth.onAuthStateChange(async(_event,session)=>{
+  const nextUser=session?.user||null;
+  if(onlineUser?.id!==nextUser?.id){
+   if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}
+   if(positionTimer){clearInterval(positionTimer);positionTimer=null}
+   if(worldChannel){sb.removeChannel(worldChannel);worldChannel=null}
+   onlineConnectionReady=false;activeWorldId=null;onlineSavedPosition=null;activeWorld='ONLINE';inv={};remotePlayers=[];
+   $('#world-name').textContent=nextUser?'WORLD GATE':'LOGIN';$('#coins').textContent='0';
+  }
+  onlineUser=nextUser;setAccountLabel();
+  if(onlineUser)await loadProfile();
+  else{equippedTool='starter_pickaxe';toast('Login diperlukan untuk bermain online')}
+ });
 }
 function loadOnlineSdk(){
  if(window.supabase){initializeOnlineClient();return}

@@ -67,12 +67,12 @@ assert.ok(js.includes("if(!document.hidden&&worldChannel&&onlineUser)"), 'Realti
 assert.ok(js.includes("last_world_id,pos_x,pos_y"), 'Online player resume data must be loaded from the profile');
 assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target must follow pointer movement');
 assert.ok(js.includes('ty=player.y+player.h+T*.45;mineAt(tx,ty,dt*16.67)'), 'Dedicated mine button must target the block at the player\'s feet, not empty air above the ground');
-assert.ok(js.includes("localPlants[tx+','+ty]"), 'Offline crop growth state must be tracked');
+assert.ok(js.includes("sb.rpc('orbit_plant_seed'"), 'Crop planting must use the online server RPC');
 assert.ok(js.includes("onlineSavedPosition?.world_id===w.id"), 'Online world resume must restore the server position');
 assert.ok(js.includes("remoteData?.animation==='walk'"), 'Remote avatar movement state is missing');
 assert.ok(js.includes('p.x*T-player.w/2-cameraX'), 'Remote avatar horizontal alignment is incorrect');
 assert.ok(js.includes('Tidak bisa memasang blok di tubuh pemain'), 'Online placement must prevent trapping the player');
-assert.ok(js.includes("if(!activeWorldId){localStorage.setItem('orbit_v2_world_'"), 'Online worlds must not overwrite local saves');
+assert.ok(!js.includes("localStorage.setItem('orbit_v2_world_'"), 'World maps must never be saved locally');
 assert.ok(!js.includes('}\\nfunction rectBlocked('), 'Collision helper contains a literal escaped newline');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
 assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is missing');
@@ -111,13 +111,13 @@ assert.ok(!releaseWorkflow.includes('keytool -genkeypair'), 'Production release 
 console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gameplay hooks, landscape and fullscreen build config.');
 
 assert.ok(js.includes('const placeableItems=catalog.filter'), 'Hotbar must only expose items supported by the placement system');
-assert.ok(js.includes('const tile=placeableItems[selected]'), 'Offline placement must resolve the selected hotbar item safely');
+assert.ok(js.includes('if(!onlineConnectionReady||!activeWorldId||!onlineUser)return;let tx='), 'Block placement must be disabled unless connected to the online world');
 assert.ok(js.includes("items=['grass_block','soil_block','slate_block'];if(selected<0||selected>=items.length)"), 'Online placement must reject unsupported hotbar items safely');
 assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
 assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
 assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describe(it)"), 'Inventory item details and selection actions are missing');
 
-assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Offline world progress must save immediately when the app is backgrounded');
+assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Backgrounding must clear controls; local save is a no-op');
 
 assert.ok(js.includes("addEventListener('offline',()=>{clearControls();onlineConnectionReady=false;"), 'Network loss must pause gameplay and disable online readiness');
 assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!onlineUser||!sb)return;"), 'Online world must rejoin server after network recovery');
@@ -126,3 +126,5 @@ assert.ok(js.includes('onlineConnectionReady=false') && js.includes('if(!onlineC
 assert.ok(js.includes('ORBIT hanya dapat dimainkan secara online'), 'Disconnected state must clearly communicate online-only gameplay');
 assert.ok(js.includes('function save(showToast=false){if(showToast)toast(\'Progres ORBIT disimpan otomatis oleh server saat online\')}'), 'Local save must be disabled');
 assert.ok(!js.includes(\"toast('Mode offline aktif\"), 'No offline-mode messaging or fallback may remain');
+
+assert.ok(js.includes('if(onlineUser?.id!==nextUser?.id){') && js.includes("$('#world-name').textContent=nextUser?'WORLD GATE':'LOGIN'"), 'Authentication changes must never switch into a local world');
