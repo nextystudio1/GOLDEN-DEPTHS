@@ -89,6 +89,7 @@ assert.ok(html.includes('<script src="audio.js"></script>'), 'Audio engine must 
 for (const sound of ['break','place','collect','harvest','jump','notify','click']) assert.ok(audioEngine.includes("'" + sound + "'"), 'Missing audio event: ' + sound);
 assert.ok(audioEngine.includes('function renderSettings(root)'), 'Separate music and effects settings are missing');
 assert.ok(audioEngine.includes('function noiseBurst(') && audioEngine.includes('function kick(') && audioEngine.includes('musicTimer=setInterval(musicStep,300)'), 'Original soundtrack must include layered percussion and a longer rhythmic loop');
+assert.ok(audioEngine.includes("noiseBurst(.07,.035,0,900,'lowpass',effectGain)"), 'Mining impact noise must use the independent effects bus');
 assert.ok(audioEngine.includes('musicOn') && audioEngine.includes('effectsOn'), 'Independent music/effects toggles are missing');
 assert.ok(js.includes("window.ORBITAudio?.play('break')") && js.includes("window.ORBITAudio?.play('place')"), 'Mining and placement must trigger audio');
 assert.ok(js.includes("window.ORBITAudio?.renderSettings($('#modal-content'))"), 'Settings panel must expose audio controls');
