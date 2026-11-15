@@ -142,7 +142,7 @@ assert.ok(html.includes('caches.delete(key)') && html.includes('key.startsWith(\
 assert.ok(js.includes("if(!(await loadProfile())){activeWorldId=null;toast('Profil server belum siap."), 'World entry must fail closed if the server profile is unavailable');
 assert.ok(js.includes('return results.every(Boolean)}return true}'), 'World entry must fail closed if any required server chunk fails to load');
 assert.ok(js.includes("if(!(await syncOnlineInventory())){activeWorldId=null;toast('Inventaris server gagal dimuat."), 'World entry must require inventory data from the server');
-assert.ok(js.includes('async function syncOnlineInventory(){if(!sb||!onlineUser)return false;'), 'Inventory sync must report server failure instead of allowing local play');
+assert.ok(/async function syncOnlineInventory\(\)\{\s*if\(!sb\|\|!onlineUser\)return false;/.test(js), 'Inventory sync must report server failure instead of allowing local play');
 assert.ok(js.includes("if(!document.hidden&&!(await syncOnlinePosition())){activeWorldId=null;toast('Posisi pemain gagal disimpan ke server."), 'World reconnect must not fail just because the app is backgrounded; resume handler will sync position');
 assert.ok(js.includes("(!worldChannel||!onlineConnectionReady)"), 'App resume must recover a stale realtime channel, not only a missing channel');
 assert.ok(js.includes('worldReconnectPending=false'), 'World reconnect must guard against duplicate resume attempts');
