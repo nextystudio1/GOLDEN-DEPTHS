@@ -125,6 +125,6 @@ assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!online
 assert.ok(js.includes('onlineConnectionReady=false') && js.includes('if(!onlineConnectionReady||!activeWorldId||!navigator.onLine)'), 'Gameplay must remain locked until a live server channel is connected');
 assert.ok(js.includes('ORBIT hanya dapat dimainkan secara online'), 'Disconnected state must clearly communicate online-only gameplay');
 assert.ok(js.includes('function save(showToast=false){if(showToast)toast(\'Progres ORBIT disimpan otomatis oleh server saat online\')}'), 'Local save must be disabled');
-assert.ok(!js.includes(\"toast('Mode offline aktif\"), 'No offline-mode messaging or fallback may remain');
+assert.ok(!js.includes("toast('Mode offline aktif"), 'No offline-mode messaging or fallback may remain');
 
 assert.ok(js.includes('if(onlineUser?.id!==nextUser?.id){') && js.includes("$('#world-name').textContent=nextUser?'WORLD GATE':'LOGIN'"), 'Authentication changes must never switch into a local world');
