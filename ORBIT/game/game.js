@@ -350,6 +350,7 @@ function refreshSocialPlayerList(){
  const owned=ownedRows.filter(x=>tradeableIds.has(x.item_id));
  const itemNames=new Map(tradeItems.map(i=>[i.item_id,i.display_name]));
  const offerText=offer=>(offer||[]).map(x=>(itemNames.get(x.item_id)||x.item_id)+' ×'+x.quantity).join(', ')||'Kosong';
+ const ownedById=new Map(owned.map(item=>[item.item_id,item]));
  (trades||[]).forEach(t=>{
   const incoming=t.receiver_id===onlineUser.id,other=incoming?t.sender_id:t.receiver_id;
   const card=document.createElement('div');card.className='panel-row';card.style.display='block';
@@ -359,9 +360,11 @@ function refreshSocialPlayerList(){
   const select=document.createElement('select');select.className='world-input';
   owned.forEach(it=>{const o=document.createElement('option');o.value=it.item_id;o.textContent=(itemNames.get(it.item_id)||it.item_id)+' • '+it.quantity;select.append(o)});
   if(!owned.length){const o=document.createElement('option');o.textContent='Tidak ada item untuk ditawarkan';select.append(o)}
-  const quantity=document.createElement('input');quantity.className='world-input';quantity.type='number';quantity.min='1';quantity.max='999';quantity.value='1';
+  const quantity=document.createElement('input');quantity.className='world-input';quantity.type='number';quantity.min='1';quantity.step='1';quantity.value='1';
+  const syncQuantityLimit=()=>{const selected=ownedById.get(select.value);const max=Math.max(0,Number(selected?.quantity)||0);quantity.max=String(max);quantity.disabled=max<1;if(Number(quantity.value)>max)quantity.value=String(Math.max(1,max));};
+  select.addEventListener('change',syncQuantityLimit);syncQuantityLimit();
   const offerButton=addText(card,'button','KIRIM TAWARAN');offerButton.disabled=!owned.length;
-  offerButton.onclick=async()=>{const q=Number(quantity.value);if(!Number.isInteger(q)||q<1){toast('Jumlah tidak valid');return}offerButton.disabled=true;const {error}=await sb.rpc('orbit_set_trade_offer',{p_trade_id:t.id,p_offer:[{item_id:select.value,quantity:q}]});offerButton.disabled=false;if(error){toast(error.message.includes('INSUFFICIENT_TRADE_ITEMS')?'Jumlah item tidak cukup':'Tawaran gagal: '+error.message);return}toast('Tawaran diperbarui');openPanel('social')};
+  offerButton.onclick=async()=>{const q=Number(quantity.value),selected=ownedById.get(select.value),max=Number(selected?.quantity)||0;if(!Number.isSafeInteger(q)||q<1||q>max){toast('Jumlah harus 1 sampai '+max+' sesuai stok item');syncQuantityLimit();return}offerButton.disabled=true;const {error}=await sb.rpc('orbit_set_trade_offer',{p_trade_id:t.id,p_offer:[{item_id:select.value,quantity:q}]});offerButton.disabled=false;if(error){toast(error.message.includes('INSUFFICIENT_TRADE_ITEMS')?'Jumlah item tidak cukup':'Tawaran gagal: '+error.message);return}toast('Tawaran diperbarui');openPanel('social')};
   card.append(select,quantity,offerButton);
   if(incoming){const accept=addText(card,'button','TERIMA TRADE');accept.style.marginLeft='6px';accept.onclick=async()=>{accept.disabled=true;const {error}=await sb.rpc('orbit_accept_trade',{p_trade_id:t.id});accept.disabled=false;if(error){const m=error.message;toast(m.includes('BOTH_OFFERS_REQUIRED')?'Kedua pemain harus mengirim tawaran':m.includes('TRADE_INVENTORY_LIMIT')?'Inventaris salah satu pemain penuh':m.includes('TRADE_ITEMS_CHANGED')?'Item berubah, perbarui tawaran':'Trade gagal: '+m);return}toast('Trade berhasil');await syncOnlineInventory();openPanel('social')}}
   const decline=addText(card,'button','TOLAK');decline.style.marginLeft='6px';decline.onclick=async()=>{const {error}=await sb.rpc('orbit_decline_trade',{p_trade_id:t.id});if(error)toast('Gagal menolak trade');else{toast('Trade ditolak');openPanel('social')}};
