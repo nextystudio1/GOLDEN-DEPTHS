@@ -484,13 +484,14 @@ placeAt=function(px,py){if(!onlineConnectionReady||!activeWorldId||!onlineUser||
 async function refreshMarketPanel(content){
  if(!sb||!onlineUser){addText(content,'p','Login dahulu untuk memakai market.','panel-note');return}
  addText(content,'p','Jual dan beli item dari pemain lain. Semua pembayaran dan perpindahan item diproses oleh server.','panel-note');
- const [itemRes,invRes,listingRes]=await Promise.all([
-  sb.from('item_catalog').select('item_id,display_name,stack_limit').eq('is_tradeable',true).order('display_name'),
-  sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id),
+ const [inventoryResult,listingRes]=await Promise.all([
+  fetchAllPlayerInventoryRows(),
   sb.from('market_listings').select('id,seller_id,item_id,quantity,unit_price,currency,created_at').eq('status','active').order('created_at',{ascending:false}).range(0,39)
  ]);
- if(itemRes.error||invRes.error||listingRes.error){addText(content,'p','Market gagal dimuat. Periksa koneksi dan coba lagi.','panel-note');return}
- const items=itemRes.data||[],inventory=invRes.data||[],itemNames=new Map(items.map(x=>[x.item_id,x.display_name]));
+ if(inventoryResult.error||listingRes.error){addText(content,'p','Market gagal dimuat. Periksa koneksi dan coba lagi.','panel-note');return}
+ const inventory=inventoryResult.data||[],catalogResult=await fetchCatalogRowsByIds(inventory.map(x=>x.item_id));
+ if(catalogResult.error){addText(content,'p','Katalog market gagal dimuat.','panel-note');return}
+ const items=(catalogResult.data||[]).filter(x=>x.is_tradeable===true),itemNames=new Map(items.map(x=>[x.item_id,x.display_name]));
  let listings=listingRes.data||[],listingOffset=listings.length,hasMore=listings.length===40,loadingMore=false;
  addText(content,'p','📦 Pasang penjualan','panel-note');
  const select=document.createElement('select');select.className='world-input';

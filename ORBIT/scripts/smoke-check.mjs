@@ -48,6 +48,7 @@ assert.ok(js.includes("if(name==='social'){authPanel();return}"), 'Active Social
 assert.ok(js.includes("if(name==='market'){title.textContent='🏪 ORBIT Market';refreshMarketPanel(content);return}"), 'Active Market route must render player listings and transactions');
 assert.ok(js.includes(".range(0,39)") && js.includes("listingOffset+39") && js.includes("MUAT LEBIH BANYAK"), 'Market listings must support server pagination beyond the first 40 active offers');
 assert.ok(js.includes("placeholder='Cari item di market...'"), 'Market must provide listing search');
+assert.ok(js.includes('fetchAllPlayerInventoryRows()') && js.includes('fetchCatalogRowsByIds(inventory.map(x=>x.item_id))'), 'Market item selector must load all owned tradeable items without fetching the full global catalog');
 assert.ok(js.includes("title.textContent='🌍 World Gate';refreshWorldList(content)"), 'Active World Gate route must load public online worlds');
 assert.ok(js.includes("Login dan pilih dunia online untuk mulai bermain. Progres disimpan di server."), 'Signed-in World Gate must explain online-only play');
 assert.ok(js.includes("const {error}=await sb.auth.signInWithPassword"), 'Manual sign-in action must remain available');
