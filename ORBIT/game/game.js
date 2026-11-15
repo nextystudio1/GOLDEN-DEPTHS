@@ -79,7 +79,72 @@ function getItem(id){return catalog.find(x=>x.id===id)}
 function makeItemIcon(id){if(!builtInItemIcons.has(id)){const fallback=document.createElement('span');fallback.className='item-icon-fallback';fallback.textContent=getItem(id)?.icon||'📦';fallback.setAttribute('aria-label',getItem(id)?.name||'Item');return fallback}const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 32 32');svg.setAttribute('class','item-icon-svg');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','assets/items.svg#'+id);svg.append(use);return svg}
 function addItem(id,n=1){window.ORBITAudio?.play('collect');const item=getItem(id),limit=item?.stack||999,current=inv[id]||0;if(!Number.isInteger(n)||n<1||current+n>limit){toast('Inventaris penuh');return false}inv[id]=current+n;renderHotbar();if(!$('#modal').classList.contains('hidden')&&$('#modal').classList.contains('inventory-mode'))renderInventory();return true}
 function renderHotbar(){const bar=$('#hotbar');bar.replaceChildren();placeableItems.forEach((it,i)=>{let b=document.createElement('button');b.className='slot'+(i===selected?' selected':'');b.title=it.name;b.append(makeItemIcon(it.id));let s=document.createElement('small');s.textContent=inv[it.id]||0;b.append(s);b.onclick=()=>{selected=i;renderHotbar()};bar.append(b)})}
-function renderInventory(){let e=$('#modal-content');e.replaceChildren();let grid=document.createElement('div');grid.className='inventory-grid';const detail=document.createElement('p');detail.className='panel-note inventory-detail';const describe=it=>{const count=inv[it.id]||0;detail.textContent=it.desc+' • Dimiliki: '+count+(it.placeable===true?' • Bisa dipasang dari hotbar':it.id==='seed'?' • Tanam melalui Workshop':it.category==='tool'?' • Pasang melalui bagian peralatan':it.category==='resource'?' • Bahan crafting':'')};catalog.forEach(it=>{let d=document.createElement('button');d.type='button';d.className='inventory-item'+(placeableItems[selected]?.id===it.id?' selected':'');let b=document.createElement('b');b.className='item-icon';b.append(makeItemIcon(it.id));let n=document.createElement('strong');n.textContent=it.name;let q=document.createElement('div');q.textContent='× '+(inv[it.id]||0);d.append(b,n,q);d.onclick=()=>{describe(it);const slot=placeableItems.findIndex(x=>x.id===it.id);if(slot>=0){selected=slot;renderHotbar();grid.querySelectorAll('.inventory-item').forEach((node,index)=>node.classList.toggle('selected',placeableItems[selected]?.id===catalog[index]?.id))}};grid.append(d)});e.append(grid,detail);describe(catalog.find(x=>x.id===placeableItems[selected]?.id)||catalog[0]);const gear=document.createElement('div');gear.className='panel-row';const label=document.createElement('span');label.textContent='Pilih alat tambang';const picker=document.createElement('select');picker.className='world-input';const tools=catalog.filter(it=>it.category==='tool'&&(it.serverId==='starter_pickaxe'||(inv[it.id]||0)>0));tools.forEach(it=>{const o=document.createElement('option');o.value=it.serverId||it.id;o.textContent=it.name;picker.append(o)});picker.value=tools.some(it=>(it.serverId||it.id)===equippedTool)?equippedTool:(tools[0]?.serverId||'starter_pickaxe');const button=document.createElement('button');button.textContent='PAKAI';button.onclick=async()=>{if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk memasang alat');return}const next=picker.value;button.disabled=true;const {error}=await sb.rpc('orbit_equip_tool',{p_item_id:next});button.disabled=false;if(error){toast('Gagal memasang alat: '+error.message);return}equippedTool=next;renderInventory();toast('Alat berhasil dipasang')};gear.append(label,picker,button);e.append(gear)}
+const serverItemMap={grass_block:'grass',soil_block:'dirt',slate_block:'stone',copper_ore:'copper',sky_crystal:'crystal',amber_wood:'wood',glow_seed:'seed',copper_pickaxe:'pickaxe',stone_pickaxe:'stonepick',crystal_pickaxe:'crystalpick'};
+const categoryIcons={block:'🧱',resource:'🪨',seed:'🌱',tool:'🛠️',material:'🧰',consumable:'🧪',pet:'🐾',furniture:'🪑',decoration:'✨'};
+const validPlaceableTiles=[1,2,3,9,10,11,12];
+function mergeCatalogRow(row,keep=true){
+ const key=serverItemMap[row.item_id]||row.item_id,meta=row.item_data&&typeof row.item_data==='object'?row.item_data:{};
+ const existing=catalog.find(item=>item.id===key);
+ const usage=meta.description||meta.function||(meta['用途']==='crafting'?'Bahan untuk membuat item lain.':meta['用途']==='farming'?'Benih untuk kegiatan pertanian.':meta.tool==='pickaxe'?'Alat tambang • Kecepatan '+(meta.mine_speed||1)+'x':'');
+ const item=existing||{id:key,icon:categoryIcons[row.category]||'📦'};
+ Object.assign(item,{serverId:row.item_id,name:row.display_name||item.name||row.item_id,tile:Number.isInteger(meta.tile)?meta.tile:(item.tile||0),stack:row.stack_limit||item.stack||999,desc:usage||item.desc||('Kategori: '+(row.category||'item')+' • Kelangkaan: '+(row.rarity||'common')),category:row.category||item.category||'item',rarity:row.rarity||item.rarity||'common',placeable:!!row.is_placeable,tradeable:!!row.is_tradeable,itemData:meta});
+ if(!existing&&keep)catalog.push(item);
+ return item;
+}
+function renderInventory(){
+ const e=$('#modal-content');e.replaceChildren();
+ const search=document.createElement('input');search.type='search';search.className='world-input';search.placeholder='Cari nama item...';search.setAttribute('aria-label','Cari item di katalog');
+ const grid=document.createElement('div');grid.className='inventory-grid';
+ const detail=document.createElement('p');detail.className='panel-note inventory-detail';
+ const ownedItems=()=>catalog.filter(it=>(inv[it.id]||0)>0);
+ const describe=it=>{const count=inv[it.id]||0;detail.textContent=(it.desc||'Item ORBIT')+' • Dimiliki: '+count+(it.placeable===true?' • Bisa dipasang dari hotbar':it.id==='seed'?' • Tanam melalui Workshop':it.category==='tool'?' • Pasang melalui bagian peralatan':it.category==='resource'?' • Bahan crafting':'')};
+ let visibleItems=ownedItems(),searchTimer=null,requestNumber=0;
+ const renderItems=items=>{
+  visibleItems=items;grid.replaceChildren();
+  if(!items.length){addText(grid,'p',search.value.trim()?'Item tidak ditemukan.':'Tas masih kosong. Tambang atau buat item untuk mengisinya.','panel-note');return}
+  items.forEach(it=>{
+   const d=document.createElement('button');d.type='button';d.className='inventory-item'+(placeableItems[selected]?.id===it.id?' selected':'');
+   const b=document.createElement('b');b.className='item-icon';b.append(makeItemIcon(it.id));
+   const n=document.createElement('strong');n.textContent=it.name;
+   const q=document.createElement('div');q.textContent='× '+(inv[it.id]||0);
+   d.append(b,n,q);
+   d.onclick=()=>{
+    describe(it);
+    if((inv[it.id]||0)<=0){detail.textContent=it.name+' • Belum dimiliki. Item ini belum dapat dipilih.';return}
+    const slot=placeableItems.findIndex(x=>x.id===it.id);
+    if(slot>=0){selected=slot;renderHotbar();renderItems(visibleItems)}
+   };
+   grid.append(d);
+  });
+ };
+ const searchCatalog=async()=>{
+  const query=search.value.trim().replace(/[%_]/g,'').slice(0,40),request=++requestNumber;
+  if(query.length<2){renderItems(ownedItems());return}
+  if(!sb||!onlineUser||!navigator.onLine){renderItems(ownedItems());toast('Koneksi diperlukan untuk mencari katalog item');return}
+  const {data,error}=await sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').ilike('display_name','%'+query+'%').order('display_name').limit(40);
+  if(request!==requestNumber)return;
+  if(error){toast('Pencarian katalog gagal: '+error.message);return}
+  renderItems((data||[]).map(row=>mergeCatalogRow(row,false)));
+ };
+ search.addEventListener('input',()=>{if(searchTimer)clearTimeout(searchTimer);searchTimer=setTimeout(searchCatalog,220)});
+ e.append(search,grid,detail);renderItems(visibleItems);
+ describe(catalog.find(x=>x.id===placeableItems[selected]?.id)||visibleItems[0]||catalog[0]);
+ const gear=document.createElement('div');gear.className='panel-row';
+ const label=document.createElement('span');label.textContent='Pilih alat tambang';
+ const picker=document.createElement('select');picker.className='world-input';
+ const tools=catalog.filter(it=>it.category==='tool'&&(it.serverId==='starter_pickaxe'||(inv[it.id]||0)>0));
+ tools.forEach(it=>{const o=document.createElement('option');o.value=it.serverId||it.id;o.textContent=it.name;picker.append(o)});
+ picker.value=tools.some(it=>(it.serverId||it.id)===equippedTool)?equippedTool:(tools[0]?.serverId||'starter_pickaxe');
+ const button=document.createElement('button');button.textContent='PAKAI';
+ button.onclick=async()=>{
+  if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk memasang alat');return}
+  const next=picker.value;button.disabled=true;
+  const {error}=await sb.rpc('orbit_equip_tool',{p_item_id:next});button.disabled=false;
+  if(error){toast('Gagal memasang alat: '+error.message);return}
+  equippedTool=next;renderInventory();toast('Alat berhasil dipasang');
+ };
+ gear.append(label,picker,button);e.append(gear);
+}
 function openPanel(name){const modal=$('#modal'),title=$('#modal-title'),content=$('#modal-content');content.replaceChildren();modal.classList.remove('hidden');modal.classList.toggle('inventory-mode',name==='inventory');modal.classList.remove('sheet-expanded');if(name==='inventory'){title.textContent='🎒 Backpack';renderInventory()}else if(name==='craft'){
  title.textContent='⚒ Workshop';
  const note=document.createElement('p');note.className='panel-note';note.textContent='Semua resep diproses dan disimpan oleh server ORBIT.';content.append(note);
@@ -377,41 +442,17 @@ async function loadOnlineChunk(cx,cy){if(!sb||!activeWorldId||cx<0||cx>13||cy<0|
 async function ensureNearbyChunks(){if(!activeWorldId)return false;const cx=Math.floor(player.x/T/16),cy=Math.floor(player.y/T/16),tasks=[];for(let y=Math.max(0,cy-1);y<=Math.min(5,cy+3);y++)for(let x=Math.max(0,cx-1);x<=Math.min(13,cx+3);x++)if(!loadedChunkKeys.has(x+','+y))tasks.push(loadOnlineChunk(x,y));if(tasks.length){const results=await Promise.all(tasks);return results.every(Boolean)}return true}
 async function syncOnlineInventory(){
  if(!sb||!onlineUser)return false;
- const [inventoryResult,catalogResult]=await Promise.all([
-  sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id),
-  sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').order('display_name').range(0,999)
- ]);
- if(inventoryResult.error||catalogResult.error)return false;
- const mapIds={grass_block:'grass',soil_block:'dirt',slate_block:'stone',copper_ore:'copper',sky_crystal:'crystal',amber_wood:'wood',glow_seed:'seed',copper_pickaxe:'pickaxe',stone_pickaxe:'stonepick',crystal_pickaxe:'crystalpick'};
- const iconForCategory={block:'🧱',resource:'🪨',seed:'🌱',tool:'🛠️',material:'🧰',consumable:'🧪',pet:'🐾',furniture:'🪑',decoration:'✨'};
- const known=new Set(catalog.map(item=>item.id));
- for(const row of catalogResult.data||[]){
-  const key=mapIds[row.item_id]||row.item_id;
-  const meta=row.item_data&&typeof row.item_data==='object'?row.item_data:{};
-  const existing=catalog.find(item=>item.id===key);
-  const usage=meta.description||meta.function||
-   (meta['用途']==='crafting'?'Bahan untuk membuat item lain.':
-    meta['用途']==='farming'?'Benih untuk kegiatan pertanian.':
-    meta.tool==='pickaxe'?'Alat tambang • Kecepatan '+(meta.mine_speed||1)+'x':'');
-  const item=existing||{id:key,icon:iconForCategory[row.category]||'📦'};
-  Object.assign(item,{
-   serverId:row.item_id,
-   name:row.display_name||item.name||row.item_id,
-   tile:Number.isInteger(meta.tile)?meta.tile:(item.tile||0),
-   stack:row.stack_limit||item.stack||999,
-   desc:usage||item.desc||('Kategori: '+(row.category||'item')+' • Kelangkaan: '+(row.rarity||'common')),
-   category:row.category||item.category||'item',
-   rarity:row.rarity||item.rarity||'common',
-   placeable:!!row.is_placeable,
-   tradeable:!!row.is_tradeable,
-   itemData:meta
-  });
-  if(!existing){catalog.push(item);known.add(key)}
- }
- placeableItems.splice(0,placeableItems.length,...catalog.filter(item=>item.placeable===true&&Number.isInteger(item.tile)&&item.tile>=1&&item.tile<=3));
- selected=Math.max(0,Math.min(selected,placeableItems.length-1));
- Object.keys(inv).forEach(k=>inv[k]=0);
- (inventoryResult.data||[]).forEach(row=>{const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity});
+ const inventoryResult=await sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id);
+ if(inventoryResult.error)return false;
+ const inventoryRows=inventoryResult.data||[];
+ const ids=[...new Set(['grass_block','soil_block','slate_block','starter_pickaxe',...inventoryRows.map(row=>row.item_id)])];
+ const {data:catalogRows,error:catalogError}=await sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').in('item_id',ids);
+ if(catalogError)return false;
+ (catalogRows||[]).forEach(row=>mergeCatalogRow(row,true));
+ Object.keys(inv).forEach(k=>delete inv[k]);
+ inventoryRows.forEach(row=>{const key=serverItemMap[row.item_id]||row.item_id;inv[key]=row.quantity});
+ placeableItems.splice(0,placeableItems.length,...catalog.filter(item=>item.placeable===true&&validPlaceableTiles.includes(item.tile)&&(inv[item.id]||0)>0));
+ selected=Math.max(0,Math.min(selected,Math.max(0,placeableItems.length-1)));
  renderHotbar();
  if(!$('#modal').classList.contains('hidden')&&$('#modal').classList.contains('inventory-mode'))renderInventory();
  return true;
