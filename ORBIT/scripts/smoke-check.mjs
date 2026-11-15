@@ -111,7 +111,7 @@ assert.ok(!releaseWorkflow.includes('keytool -genkeypair'), 'Production release 
 console.log('ORBIT smoke checks passed: UI shell, backpack sheet, online gameplay hooks, landscape and fullscreen build config.');
 
 assert.ok(js.includes('const placeableItems=catalog.filter'), 'Hotbar must only expose items supported by the placement system');
-assert.ok(js.includes('if(!onlineConnectionReady||!activeWorldId||!onlineUser)return;let tx='), 'Block placement must be disabled unless connected to the online world');
+assert.ok(js.includes("placeAt=function(px,py){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;"), 'Block placement must require an active online session');
 assert.ok(js.includes("items=['grass_block','soil_block','slate_block'];if(selected<0||selected>=items.length)"), 'Online placement must reject unsupported hotbar items safely');
 assert.ok(js.includes('function spawnBlockParticles(') && js.includes('function drawParticles(dt)'), 'Mining and placement particle effects are missing');
 assert.ok(js.includes('drawMiningProgress();drawParticles(dt)'), 'World loop must render and update item effects');
