@@ -82,7 +82,8 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
 assert.ok(!serviceWorker.includes('caches.open(CACHE)') && serviceWorker.includes('fetch(event.request)'), 'Service worker must never cache game content for offline play');
 assert.ok(html.includes('getRegistrations()') && html.includes('unregister()'), 'Existing offline service workers must be removed');
 assert.ok(js.includes("if(activeWorldId&&worldChannel&&onlineUser){lastPositionSyncKey='';ensureNearbyChunks().catch(()=>{});syncOnlinePosition();worldChannel.track("), 'Online world must resync position, nearby chunks and presence when the app resumes');
-assert.ok(js.includes('if(activeWorldId&&onlineUser&&sb&&navigator.onLine&&(!worldChannel||!onlineConnectionReady)){if(worldReconnectPending)return;worldReconnectPending=true;'), 'App resume must rejoin the online world if its realtime channel was lost or stale while backgrounded');
+assert.ok(js.includes('async function reconnectActiveWorld(){if(worldReconnectPending||!activeWorldId||!onlineUser||!sb||!navigator.onLine)return;'), 'Reconnect must be single-flight and require an authenticated online session');
+assert.ok(js.includes("addEventListener('online',()=>{reconnectActiveWorld()});") && js.includes('(!worldChannel||!onlineConnectionReady)){reconnectActiveWorld();return}'), 'Network recovery and app resume must use the same reconnect path');
 assert.ok(!serviceWorker.includes('caches.match(event.request)'), 'Service worker must not provide cached offline fallbacks');
 const audioEngine = fs.readFileSync('game/audio.js', 'utf8');
 assert.ok(audioEngine.includes("if(!ac||!unlocked)return;if(document.hidden){") && audioEngine.includes('ac.suspend?.()') && audioEngine.includes('ac.resume?.();startMusic()'), 'Audio must pause in background and resume when the app returns');
