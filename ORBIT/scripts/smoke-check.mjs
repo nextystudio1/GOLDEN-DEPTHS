@@ -82,6 +82,7 @@ for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pic
 assert.ok(!serviceWorker.includes('caches.open(CACHE)') && serviceWorker.includes('fetch(event.request)'), 'Service worker must never cache game content for offline play');
 assert.ok(html.includes('getRegistrations()') && html.includes('unregister()'), 'Existing offline service workers must be removed');
 assert.ok(js.includes("if(activeWorldId&&worldChannel&&onlineUser){lastPositionSyncKey='';ensureNearbyChunks().catch(()=>{});syncOnlinePosition();worldChannel.track("), 'Online world must resync position, nearby chunks and presence when the app resumes');
+assert.ok(js.includes('if(activeWorldId&&onlineUser&&sb&&navigator.onLine&&!worldChannel){const resume={id:activeWorldId,name:activeWorld,biome:activeBiome};enterOnlineWorld(resume)'), 'App resume must rejoin the online world if its realtime channel was lost while backgrounded');
 assert.ok(!serviceWorker.includes('caches.match(event.request)'), 'Service worker must not provide cached offline fallbacks');
 const audioEngine = fs.readFileSync('game/audio.js', 'utf8');
 assert.ok(audioEngine.includes("if(!ac||!unlocked)return;if(document.hidden){") && audioEngine.includes('ac.suspend?.()') && audioEngine.includes('ac.resume?.();startMusic()'), 'Audio must pause in background and resume when the app returns');
