@@ -130,3 +130,8 @@ assert.ok(!js.includes("toast('Mode offline aktif"), 'No offline-mode messaging 
 assert.ok(js.includes('if(onlineUser?.id!==nextUser?.id){') && js.includes("$('#world-name').textContent=nextUser?'WORLD GATE':'LOGIN'"), 'Authentication changes must never switch into a local world');
 
 assert.ok(html.includes('caches.delete(key)') && html.includes('key.startsWith(\"orbit-shell-\")'), 'Legacy offline game caches must be deleted on launch');
+
+assert.ok(js.includes("if(!(await loadProfile())){activeWorldId=null;toast('Profil server belum siap."), 'World entry must fail closed if the server profile is unavailable');
+assert.ok(js.includes('return results.every(Boolean)}return true}'), 'World entry must fail closed if any required server chunk fails to load');
+assert.ok(js.includes("if(!(await syncOnlineInventory())){activeWorldId=null;toast('Inventaris server gagal dimuat."), 'World entry must require inventory data from the server');
+assert.ok(js.includes('async function syncOnlineInventory(){if(!sb||!onlineUser)return false;'), 'Inventory sync must report server failure instead of allowing local play');
