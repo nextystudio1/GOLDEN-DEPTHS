@@ -340,8 +340,14 @@ function refreshSocialPlayerList(){
  const otherIds=[...new Set((trades||[]).map(t=>t.sender_id===onlineUser.id?t.receiver_id:t.sender_id))];
  let names=new Map();
  if(otherIds.length){const p=await sb.rpc('orbit_get_public_profiles',{p_user_ids:otherIds});names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]))}
- const [itemRes,invRes]=await Promise.all([sb.from('item_catalog').select('item_id,display_name').eq('is_tradeable',true),sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id)]);
- const tradeItems=itemRes.data||[],owned=(invRes.data||[]).filter(x=>x.quantity>0&&tradeItems.some(i=>i.item_id===x.item_id));
+ const inventoryResult=await fetchAllPlayerInventoryRows();
+ if(inventoryResult.error){addText(content,'p','Inventaris trade gagal dimuat dari server.','panel-note');return}
+ const ownedRows=(inventoryResult.data||[]).filter(x=>x.quantity>0);
+ const catalogResult=await fetchCatalogRowsByIds(ownedRows.map(x=>x.item_id));
+ if(catalogResult.error){addText(content,'p','Katalog item trade gagal dimuat.','panel-note');return}
+ const tradeItems=(catalogResult.data||[]).filter(x=>x.is_tradeable===true);
+ const tradeableIds=new Set(tradeItems.map(x=>x.item_id));
+ const owned=ownedRows.filter(x=>tradeableIds.has(x.item_id));
  const itemNames=new Map(tradeItems.map(i=>[i.item_id,i.display_name]));
  const offerText=offer=>(offer||[]).map(x=>(itemNames.get(x.item_id)||x.item_id)+' ×'+x.quantity).join(', ')||'Kosong';
  (trades||[]).forEach(t=>{
