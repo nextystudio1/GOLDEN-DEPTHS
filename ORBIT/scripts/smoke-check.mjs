@@ -80,6 +80,8 @@ assert.ok(!js.includes("localStorage.setItem('orbit_v2_world_'"), 'World maps mu
 assert.ok(!js.includes('}\\nfunction rectBlocked('), 'Collision helper contains a literal escaped newline');
 assert.ok(js.includes('ctx.globalAlpha=Math.min(.82,p+.12)'), 'Progressive block damage feedback is missing');
 assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is missing');
+assert.ok(js.includes('builtInItemIcons.has(id)') && js.includes("getItem(id)?.icon||'📦'"), 'New server catalog items must display a category icon when no vector asset exists');
+assert.ok(js.includes("catalog.filter(it=>it.category==='tool'") && js.includes("it.serverId==='starter_pickaxe'"), 'Equipment picker must discover owned tools from the server catalog instead of a fixed list');
 for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pickaxe','stonepick','crystalpick']) {
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
