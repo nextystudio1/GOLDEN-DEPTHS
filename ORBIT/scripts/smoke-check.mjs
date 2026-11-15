@@ -152,3 +152,8 @@ assert.ok(!js.includes('localPlants') && !js.includes('worlds=[]'), 'No local cr
 assert.ok(!js.includes('oldMineAt') && !js.includes('oldPlaceAt'), 'Mining and placement must not fall back to local handlers');
 assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk crafting')"), 'Crafting must require an active online connection');
 assert.ok(js.includes("if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine){toast('Koneksi server diperlukan untuk menanam')"), 'Planting must require an active online connection');
+
+assert.ok(js.includes("sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data')"), 'Backpack must load item definitions from the server catalog');
+assert.ok(js.includes("catalog.push({id:key,serverId:row.item_id"), 'New server catalog entries must be registered with their metadata');
+assert.ok(js.includes("const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity"), 'Inventory sync must retain newly added server item IDs');
+assert.ok(js.includes(".range(0,999)"), 'Catalog reads must be bounded for scale');

@@ -356,7 +356,29 @@ async function enterOnlineWorld(w){
 function applyChunk(cx,cy,data){const tiles=data?.tiles;if(!Array.isArray(tiles))return;for(let y=0;y<16;y++)for(let x=0;x<16;x++){const wy=cy*16+y,wx=cx*16+x;if(map[wy]&&Number.isInteger(tiles[y]?.[x]))map[wy][wx]=tiles[y][x]}}
 async function loadOnlineChunk(cx,cy){if(!sb||!activeWorldId||cx<0||cx>13||cy<0||cy>5)return false;const key=cx+','+cy;if(loadedChunkKeys.has(key))return true;loadedChunkKeys.add(key);const {data,error}=await sb.rpc('orbit_get_chunk',{p_world_id:activeWorldId,p_chunk_x:cx,p_chunk_y:cy});if(error){loadedChunkKeys.delete(key);return false}applyChunk(cx,cy,data);return true}
 async function ensureNearbyChunks(){if(!activeWorldId)return false;const cx=Math.floor(player.x/T/16),cy=Math.floor(player.y/T/16),tasks=[];for(let y=Math.max(0,cy-1);y<=Math.min(5,cy+3);y++)for(let x=Math.max(0,cx-1);x<=Math.min(13,cx+3);x++)if(!loadedChunkKeys.has(x+','+y))tasks.push(loadOnlineChunk(x,y));if(tasks.length){const results=await Promise.all(tasks);return results.every(Boolean)}return true}
-async function syncOnlineInventory(){if(!sb||!onlineUser)return false;const {data,error}=await sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id);if(error)return false;const mapIds={grass_block:'grass',soil_block:'dirt',slate_block:'stone',copper_ore:'copper',sky_crystal:'crystal',amber_wood:'wood',glow_seed:'seed',copper_pickaxe:'pickaxe',stone_pickaxe:'stonepick',crystal_pickaxe:'crystalpick'};Object.keys(inv).forEach(k=>inv[k]=0);(data||[]).forEach(r=>{const k=mapIds[r.item_id];if(k)inv[k]=r.quantity});renderHotbar();return true}
+async function syncOnlineInventory(){
+ if(!sb||!onlineUser)return false;
+ const [inventoryResult,catalogResult]=await Promise.all([
+  sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id),
+  sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').order('display_name').range(0,999)
+ ]);
+ if(inventoryResult.error||catalogResult.error)return false;
+ const mapIds={grass_block:'grass',soil_block:'dirt',slate_block:'stone',copper_ore:'copper',sky_crystal:'crystal',amber_wood:'wood',glow_seed:'seed',copper_pickaxe:'pickaxe',stone_pickaxe:'stonepick',crystal_pickaxe:'crystalpick'};
+ const iconForCategory={block:'🧱',resource:'🪨',seed:'🌱',tool:'🛠️',material:'🧰',consumable:'🧪',pet:'🐾',furniture:'🪑',decoration:'✨'};
+ const known=new Set(catalog.map(item=>item.id));
+ for(const row of catalogResult.data||[]){
+  const key=mapIds[row.item_id]||row.item_id;
+  if(known.has(key))continue;
+  const meta=row.item_data&&typeof row.item_data==='object'?row.item_data:{};
+  catalog.push({id:key,serverId:row.item_id,name:row.display_name||row.item_id,icon:iconForCategory[row.category]||'📦',tile:Number.isInteger(meta.tile)?meta.tile:0,stack:row.stack_limit||999,desc:meta.description||meta.function||('Kategori: '+(row.category||'item')+' • Kelangkaan: '+(row.rarity||'common')),category:row.category||'item',rarity:row.rarity||'common',placeable:!!row.is_placeable,tradeable:!!row.is_tradeable});
+  known.add(key);
+ }
+ Object.keys(inv).forEach(k=>inv[k]=0);
+ (inventoryResult.data||[]).forEach(row=>{const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity});
+ renderHotbar();
+ if(!$('#modal').classList.contains('hidden')&&$('#modal').classList.contains('inventory-mode'))renderInventory();
+ return true;
+}
 async function syncOnlinePosition(){if(!sb||!onlineUser||!activeWorldId||positionSyncBusy||document.hidden)return false;const worldId=activeWorldId;const x=Math.max(0,Math.min(WW-1,Math.floor((player.x+player.w/2)/T))),y=Math.max(0,Math.min(WH-1,Math.floor((player.y+player.h/2)/T))),key=worldId+':'+x+','+y;if(key===lastPositionSyncKey)return true;positionSyncBusy=true;try{const {error}=await sb.rpc('orbit_update_position',{p_world_id:worldId,p_x:x,p_y:y});if(error){if(error.message!=='MOVEMENT_TOO_FAST')console.warn('position sync',error.message);return false}if(activeWorldId===worldId){lastPositionSyncKey=key;onlineSavedPosition={world_id:worldId,pos_x:x,pos_y:y}}return true}finally{positionSyncBusy=false}}
 
 mineAt=function(px,py,delta=0){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!navigator.onLine||onlineActionBusy)return;const tx=Math.floor(px/T),ty=Math.floor(py/T);if(tx<0||tx>=WW||ty<0||ty>=WH){resetMining();return}if(map[ty]?.[tx]===8){if(!advanceMining(tx,ty,delta))return;onlineActionBusy=true;sb.rpc('orbit_harvest_crop',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty}).then(async({data,error})=>{if(error){resetMining();toast(error.message.includes('CROP_NOT_READY')?'Tanaman belum siap, tunggu sampai tumbuh':'Panen gagal: '+error.message);return}window.ORBITAudio?.play('harvest');spawnBlockParticles(tx,ty,map[ty][tx]);spawnBlockParticles(tx,ty,8);map[ty][tx]=0;window.ORBITAudio?.play('break');resetMining();applyProgress(data);await syncOnlineInventory();toast('Panen berhasil: +2 Glow Seed • +8 XP')}).finally(()=>onlineActionBusy=false);return}if(!map[ty]?.[tx]||!advanceMining(tx,ty,delta))return;onlineActionBusy=true;sb.rpc('orbit_mine_tile',{p_world_id:activeWorldId,p_tile_x:tx,p_tile_y:ty}).then(async({data,error})=>{if(error){resetMining();if(error.message.includes('TOO_FAR'))toast('Dekati blok dahulu');else if(error.message.includes('AREA_CLAIMED'))toast('Area ini dilindungi pemain lain');else if(!error.message.includes('MINING_COOLDOWN'))toast('Tidak bisa menambang: '+error.message);return}map[ty][tx]=0;resetMining();applyProgress(data);await syncOnlineInventory()}).finally(()=>onlineActionBusy=false)};
