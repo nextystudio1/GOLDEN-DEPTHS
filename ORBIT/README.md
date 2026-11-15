@@ -12,7 +12,7 @@ ORBIT is an original 2D side-view pixel sandbox project. It uses original game a
 - Backpack inventory sheet with drag-to-expand and drag-to-dismiss interaction.
 - Crafting, equipment progression, gathering XP, and level display.
 - Chunk claims that protect blocks and farming interactions from other players.
-- Local offline save and a basic PWA shell.
+- Online-only gameplay: authentication and live server connection are required; local worlds, local saves, and offline gameplay are disabled.
 - Capacitor Android wrapper configured for landscape immersive fullscreen.
 
 ## Build and test
