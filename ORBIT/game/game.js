@@ -344,7 +344,7 @@ async function enterOnlineWorld(w){
  if(!document.hidden&&!(await syncOnlinePosition())){activeWorldId=null;toast('Posisi pemain gagal disimpan ke server. Coba masuk ulang.');return}
  await sb.realtime.setAuth();
  worldChannel=sb.channel('orbit-world:'+w.id,{config:{private:true,presence:{key:onlineUser.id}}})
-  .on('presence',{event:'sync'},()=>{const state=worldChannel.presenceState();remotePlayers=Object.entries(state).filter(([id])=>id!==onlineUser.id).flatMap(([id,metas])=>metas.map(p=>({...p,user_id:id}))).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))};refreshSocialPlayerList()})
+  .on('presence',{event:'sync'},()=>{const state=worldChannel.presenceState();remotePlayers=Object.entries(state).filter(([id])=>id!==onlineUser.id).flatMap(([id,metas])=>metas.map(p=>({...p,user_id:id}))).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));refreshSocialPlayerList()})
   .on('postgres_changes',{event:'*',schema:'public',table:'world_chunks',filter:'world_id=eq.'+w.id},payload=>{const row=payload.new;if(row?.tile_data)applyChunk(row.chunk_x,row.chunk_y,row.tile_data)})
   .on('postgres_changes',{event:'INSERT',schema:'public',table:'world_chat_messages',filter:'world_id=eq.'+w.id},payload=>appendChatMessage(payload.new))
   .on('postgres_changes',{event:'*',schema:'public',table:'player_trades',filter:'receiver_id=eq.'+onlineUser.id},()=>{if(!$('#modal').classList.contains('hidden')&&$('#modal-title').textContent.includes('Akun'))openPanel('social')})
