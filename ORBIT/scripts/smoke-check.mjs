@@ -47,9 +47,9 @@ assert.ok(js.includes("const oldOpenPanel=openPanel;openPanel=function(name){if(
 assert.ok(js.includes("if(name==='social'){authPanel();return}"), 'Active Social Hub route must render account and multiplayer controls');
 assert.ok(js.includes("if(name==='market'){title.textContent='🏪 ORBIT Market';refreshMarketPanel(content);return}"), 'Active Market route must render player listings and transactions');
 assert.ok(js.includes("title.textContent='🌍 World Gate';refreshWorldList(content)"), 'Active World Gate route must load public online worlds');
-assert.ok(js.includes("Pilih dunia lokal atau bergabung ke dunia online."), 'Signed-in World Gate must show accurate online-world guidance');
+assert.ok(js.includes("Login dan pilih dunia online untuk mulai bermain. Progres disimpan di server."), 'Signed-in World Gate must explain online-only play');
 assert.ok(js.includes("const {error}=await sb.auth.signInWithPassword"), 'Manual sign-in action must remain available');
-assert.ok(js.includes('Login melalui Social Hub untuk melihat dan bergabung ke dunia online.'), 'World Gate must distinguish local worlds from available online worlds');
+assert.ok(!js.includes('Dunia lokal tersimpan di perangkat.'), 'World Gate must not advertise local worlds');
 assert.ok(!js.includes('Multiplayer online sedang dikembangkan.'), 'World Gate must not claim the online mode is still being developed');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
