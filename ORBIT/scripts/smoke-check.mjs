@@ -166,7 +166,7 @@ assert.ok(js.includes('serverId:row.item_id') && js.includes('catalog.push(item)
 assert.ok(js.includes('placeableItems.splice(0,placeableItems.length') && js.includes('item.placeable===true'), 'Hotbar placeable items must refresh from authoritative server catalog metadata');
 assert.ok(js.includes('p_item_id:itemId'), 'Placement must send the selected catalog item ID to the server');
 assert.ok(js.includes("meta['用途']==='crafting'") && js.includes("meta.tool==='pickaxe'"), 'Item details must explain crafting and tool functions from server metadata');
-assert.ok(js.includes("const key=mapIds[row.item_id]||row.item_id;inv[key]=row.quantity"), 'Inventory sync must retain newly added server item IDs');
+assert.ok(js.includes("const key=serverItemMap[row.item_id]||row.item_id;inv[key]=row.quantity"), 'Inventory sync must retain newly added server item IDs');
 assert.ok(js.includes(".in('item_id',ids)"), 'Inventory sync must fetch only definitions for owned and starter items');
 assert.ok(js.includes(".ilike('display_name'") && js.includes('.limit(40)'), 'Large item catalogs must be searched server-side with a bounded result page');
 assert.ok(js.includes('validPlaceableTiles=[1,2,3,9,10,11,12]') && js.includes('validPlaceableTiles.includes(item.tile)'), 'All supported crafted block types must be selectable from the hotbar');
