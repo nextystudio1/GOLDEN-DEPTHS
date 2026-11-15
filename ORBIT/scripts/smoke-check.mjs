@@ -52,6 +52,8 @@ assert.ok(js.includes("const {error}=await sb.auth.signInWithPassword"), 'Manual
 assert.ok(!js.includes('Dunia lokal tersimpan di perangkat.') && !js.includes('switchLocalWorld'), 'World Gate must not advertise or switch to local worlds');
 assert.ok(!js.includes('Multiplayer online sedang dikembangkan.'), 'World Gate must not claim the online mode is still being developed');
 assert.ok(js.includes('remoteData?.display_name'), 'Remote player name labels are missing');
+assert.ok(js.includes('function refreshSocialPlayerList()') && js.includes('refreshSocialPlayerList()})'), 'Online player list must refresh live from realtime presence updates');
+assert.ok(js.includes("request.onclick=()=>requestTradeWithPlayer(p.user_id)"), 'Social player list must use the shared server-authoritative trade action');
 assert.ok(js.includes("const tappedPlayer=tool==='mine'?remotePlayers.find(") && js.includes('requestTradeWithPlayer(tappedPlayer.user_id)'), 'Tapping another player in the world must open a server-authoritative trade request');
 assert.ok(js.includes("async function requestTradeWithPlayer(userId){if(!onlineConnectionReady||!activeWorldId||!onlineUser||!sb||!userId||userId===onlineUser.id)return;"), 'Direct player trade must require a live online world session');
 assert.ok(js.includes('function rectBlocked('), 'Player collision must check the full hitbox');
