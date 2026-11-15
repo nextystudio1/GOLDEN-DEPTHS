@@ -76,7 +76,7 @@ function save(showToast=false){if(showToast)toast('Progres ORBIT disimpan otomat
 function load(){return false}
 function setSpawn(){const tx=Math.max(0,Math.min(WW-1,Math.floor((player.x+player.w/2)/T)));const surface=map.findIndex(row=>row[tx]===1);if(surface>0){player.y=surface*T-player.h;player.vy=0;player.ground=false}}
 function getItem(id){return catalog.find(x=>x.id===id)}
-function makeItemIcon(id){if(!builtInItemIcons.has(id)){const fallback=document.createElement('span');fallback.className='item-icon-fallback';fallback.textContent=getItem(id)?.icon||'📦';fallback.setAttribute('aria-label',getItem(id)?.name||'Item');return fallback}const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 32 32');svg.setAttribute('class','item-icon-svg');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','assets/items.svg#'+id);svg.append(use);return svg}
+function makeItemIcon(id,itemOverride=null){if(!builtInItemIcons.has(id)){const item=itemOverride||getItem(id);const fallback=document.createElement('span');fallback.className='item-icon-fallback';fallback.textContent=item?.icon||'📦';fallback.setAttribute('aria-label',item?.name||'Item');return fallback}const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 32 32');svg.setAttribute('class','item-icon-svg');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','assets/items.svg#'+id);svg.append(use);return svg}
 function addItem(id,n=1){window.ORBITAudio?.play('collect');const item=getItem(id),limit=item?.stack||999,current=inv[id]||0;if(!Number.isInteger(n)||n<1||current+n>limit){toast('Inventaris penuh');return false}inv[id]=current+n;renderHotbar();if(!$('#modal').classList.contains('hidden')&&$('#modal').classList.contains('inventory-mode'))renderInventory();return true}
 function renderHotbar(){const bar=$('#hotbar');bar.replaceChildren();placeableItems.forEach((it,i)=>{let b=document.createElement('button');b.className='slot'+(i===selected?' selected':'');b.title=it.name;b.append(makeItemIcon(it.id));let s=document.createElement('small');s.textContent=inv[it.id]||0;b.append(s);b.onclick=()=>{selected=i;renderHotbar()};bar.append(b)})}
 const serverItemMap={grass_block:'grass',soil_block:'dirt',slate_block:'stone',copper_ore:'copper',sky_crystal:'crystal',amber_wood:'wood',glow_seed:'seed',copper_pickaxe:'pickaxe',stone_pickaxe:'stonepick',crystal_pickaxe:'crystalpick'};
@@ -104,7 +104,7 @@ function renderInventory(){
   if(!items.length){addText(grid,'p',search.value.trim()?'Item tidak ditemukan.':'Tas masih kosong. Tambang atau buat item untuk mengisinya.','panel-note');return}
   items.forEach(it=>{
    const d=document.createElement('button');d.type='button';d.className='inventory-item'+(placeableItems[selected]?.id===it.id?' selected':'');
-   const b=document.createElement('b');b.className='item-icon';b.append(makeItemIcon(it.id));
+   const b=document.createElement('b');b.className='item-icon';b.append(makeItemIcon(it.id,it));
    const n=document.createElement('strong');n.textContent=it.name;
    const q=document.createElement('div');q.textContent='× '+(inv[it.id]||0);
    d.append(b,n,q);
@@ -440,15 +440,35 @@ async function enterOnlineWorld(w){
 function applyChunk(cx,cy,data){const tiles=data?.tiles;if(!Array.isArray(tiles))return;for(let y=0;y<16;y++)for(let x=0;x<16;x++){const wy=cy*16+y,wx=cx*16+x;if(map[wy]&&Number.isInteger(tiles[y]?.[x]))map[wy][wx]=tiles[y][x]}}
 async function loadOnlineChunk(cx,cy){if(!sb||!activeWorldId||cx<0||cx>13||cy<0||cy>5)return false;const key=cx+','+cy;if(loadedChunkKeys.has(key))return true;loadedChunkKeys.add(key);const {data,error}=await sb.rpc('orbit_get_chunk',{p_world_id:activeWorldId,p_chunk_x:cx,p_chunk_y:cy});if(error){loadedChunkKeys.delete(key);return false}applyChunk(cx,cy,data);return true}
 async function ensureNearbyChunks(){if(!activeWorldId)return false;const cx=Math.floor(player.x/T/16),cy=Math.floor(player.y/T/16),tasks=[];for(let y=Math.max(0,cy-1);y<=Math.min(5,cy+3);y++)for(let x=Math.max(0,cx-1);x<=Math.min(13,cx+3);x++)if(!loadedChunkKeys.has(x+','+y))tasks.push(loadOnlineChunk(x,y));if(tasks.length){const results=await Promise.all(tasks);return results.every(Boolean)}return true}
+async function fetchAllPlayerInventoryRows(){
+ if(!sb||!onlineUser)return {data:null,error:new Error('AUTH_REQUIRED')};
+ const rows=[],pageSize=500;
+ for(let offset=0;offset<50000;offset+=pageSize){
+  const result=await sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id).order('item_id').range(offset,offset+pageSize-1);
+  if(result.error)return {data:null,error:result.error};
+  const page=result.data||[];rows.push(...page);
+  if(page.length<pageSize)return {data:rows,error:null};
+ }
+ return {data:null,error:new Error('INVENTORY_PAGE_LIMIT')};
+}
+async function fetchCatalogRowsByIds(itemIds){
+ const ids=[...new Set(itemIds)].filter(Boolean),rows=[],pageSize=100;
+ for(let offset=0;offset<ids.length;offset+=pageSize){
+  const result=await sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').in('item_id',ids.slice(offset,offset+pageSize));
+  if(result.error)return {data:null,error:result.error};
+  rows.push(...(result.data||[]));
+ }
+ return {data:rows,error:null};
+}
 async function syncOnlineInventory(){
  if(!sb||!onlineUser)return false;
- const inventoryResult=await sb.from('player_inventory').select('item_id,quantity').eq('user_id',onlineUser.id);
+ const inventoryResult=await fetchAllPlayerInventoryRows();
  if(inventoryResult.error)return false;
  const inventoryRows=inventoryResult.data||[];
  const ids=[...new Set(['grass_block','soil_block','slate_block','starter_pickaxe',...inventoryRows.map(row=>row.item_id)])];
- const {data:catalogRows,error:catalogError}=await sb.from('item_catalog').select('item_id,display_name,category,rarity,stack_limit,is_placeable,is_tradeable,item_data').in('item_id',ids);
- if(catalogError)return false;
- (catalogRows||[]).forEach(row=>mergeCatalogRow(row,true));
+ const catalogResult=await fetchCatalogRowsByIds(ids);
+ if(catalogResult.error)return false;
+ (catalogResult.data||[]).forEach(row=>mergeCatalogRow(row,true));
  Object.keys(inv).forEach(k=>delete inv[k]);
  inventoryRows.forEach(row=>{const key=serverItemMap[row.item_id]||row.item_id;inv[key]=row.quantity});
  placeableItems.splice(0,placeableItems.length,...catalog.filter(item=>item.placeable===true&&validPlaceableTiles.includes(item.tile)&&(inv[item.id]||0)>0));
