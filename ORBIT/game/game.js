@@ -333,7 +333,7 @@ async function enterOnlineWorld(w){
   if(!(await ensureNearbyChunks())){activeWorldId=null;toast('Data dunia gagal dimuat dari server. Coba masuk ulang.');return}
  }
  if(!(await syncOnlineInventory())){activeWorldId=null;toast('Inventaris server gagal dimuat. Coba masuk ulang.');return}
- if(!(await syncOnlinePosition())){activeWorldId=null;toast('Posisi pemain gagal disimpan ke server. Coba masuk ulang.');return}
+ if(!document.hidden&&!(await syncOnlinePosition())){activeWorldId=null;toast('Posisi pemain gagal disimpan ke server. Coba masuk ulang.');return}
  await sb.realtime.setAuth();
  worldChannel=sb.channel('orbit-world:'+w.id,{config:{private:true,presence:{key:onlineUser.id}}})
   .on('presence',{event:'sync'},()=>{const state=worldChannel.presenceState();remotePlayers=Object.entries(state).filter(([id])=>id!==onlineUser.id).flatMap(([id,metas])=>metas.map(p=>({...p,user_id:id}))).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))})

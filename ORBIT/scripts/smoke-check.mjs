@@ -135,6 +135,7 @@ assert.ok(js.includes("if(!(await loadProfile())){activeWorldId=null;toast('Prof
 assert.ok(js.includes('return results.every(Boolean)}return true}'), 'World entry must fail closed if any required server chunk fails to load');
 assert.ok(js.includes("if(!(await syncOnlineInventory())){activeWorldId=null;toast('Inventaris server gagal dimuat."), 'World entry must require inventory data from the server');
 assert.ok(js.includes('async function syncOnlineInventory(){if(!sb||!onlineUser)return false;'), 'Inventory sync must report server failure instead of allowing local play');
+assert.ok(js.includes("if(!document.hidden&&!(await syncOnlinePosition())){activeWorldId=null;toast('Posisi pemain gagal disimpan ke server."), 'World reconnect must not fail just because the app is backgrounded; resume handler will sync position');
 
 assert.ok(!js.includes('localPlants') && !js.includes('worlds=[]'), 'No local crop or world state may remain');
 assert.ok(!js.includes('oldMineAt') && !js.includes('oldPlaceAt'), 'Mining and placement must not fall back to local handlers');
