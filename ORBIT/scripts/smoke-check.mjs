@@ -85,7 +85,7 @@ assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is mi
 assert.ok(js.includes('builtInItemIcons.has(id)') && js.includes("getItem(id)?.icon||'📦'"), 'New server catalog items must display a category icon when no vector asset exists');
 assert.ok(js.includes("catalog.filter(it=>it.category==='tool'") && js.includes("it.serverId==='starter_pickaxe'"), 'Equipment picker must discover owned tools from the server catalog instead of a fixed list');
 for (const tileId of [9,10,11,12]) assert.ok(js.includes(tileId+':'), 'Missing renderer or mining timing for crafted block tile '+tileId);
-for (const recipe of ['amber_plank_block','copper_brick_block','crystal_glass_block','moss_stone_block']) assert.ok(js.includes("id:'"+recipe+"'"), 'Missing building recipe '+recipe);
+assert.ok(js.includes("sb.rpc('orbit_list_crafting_recipes'") && js.includes('recipe.ingredients') && js.includes('recipe.output_name'), 'Workshop recipes must load dynamically from server data');
 assert.ok(js.includes('it.placeable===true'), 'Inventory must describe all server placeable items');
 for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pickaxe','stonepick','crystalpick']) {
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
