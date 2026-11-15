@@ -360,7 +360,7 @@ function refreshSocialPlayerList(){
   const select=document.createElement('select');select.className='world-input';
   owned.forEach(it=>{const o=document.createElement('option');o.value=it.item_id;o.textContent=(itemNames.get(it.item_id)||it.item_id)+' • stok '+it.quantity;select.append(o)});
   if(!owned.length){const o=document.createElement('option');o.textContent='Tidak ada item untuk ditawarkan';select.append(o)}
-  const quantity=document.createElement('input');quantity.className='world-input';quantity.type='number';quantity.min='1';quantity.step='1';quantity.value='1';
+  const quantity=document.createElement('input');quantity.className='world-input';quantity.type='number';quantity.min='1';quantity.step='1';quantity.value='1';const syncQuantityLimit=()=>{const selected=ownedById.get(select.value);quantity.max=String(Math.max(1,Number(selected?.quantity)||1));quantity.value='1'};select.addEventListener('change',syncQuantityLimit);syncQuantityLimit();
   const draft=[];const draftList=document.createElement('div');draftList.className='panel-note';
   const renderDraft=()=>{draftList.replaceChildren();if(!draft.length){addText(draftList,'p','Belum ada item dalam tawaranmu.','');return}draft.forEach((entry,index)=>{const line=document.createElement('div');line.className='panel-row';const name=addText(line,'span',(itemNames.get(entry.item_id)||entry.item_id)+' ×'+entry.quantity);const remove=addText(line,'button','HAPUS');remove.type='button';remove.onclick=()=>{draft.splice(index,1);renderDraft()};line.append(name,remove);draftList.append(line)})};
   const addOffer=addText(card,'button','TAMBAH ITEM');addOffer.type='button';addOffer.disabled=!owned.length;
