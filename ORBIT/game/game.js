@@ -316,11 +316,15 @@ function refreshSocialPlayerList(){
   if(!socialPlayerListElement)return;
   socialPlayerListElement.replaceChildren();
   if(!remotePlayers.length){addText(socialPlayerListElement,'p','Belum ada pemain lain yang terdeteksi di dunia ini.','panel-note');return}
-  remotePlayers.forEach(p=>{
+  const playerTileX=(player.x+player.w/2)/T,playerTileY=(player.y+player.h/2)/T;
+  const nearby=[...remotePlayers].map(p=>({...p,distance:Math.round(Math.hypot(p.x-playerTileX,p.y-playerTileY))})).sort((a,b)=>a.distance-b.distance);
+  addText(socialPlayerListElement,'p',nearby.length+' pemain online • diurutkan dari yang terdekat','panel-note');
+  nearby.forEach(p=>{
    const row=document.createElement('div');row.className='panel-row';
-   const label=document.createElement('span');label.textContent=(p.display_name||'Explorer')+' • X '+p.x+' Y '+p.y;
+   const label=document.createElement('span');label.textContent=(p.display_name||'Explorer')+' • '+p.distance+' blok';
    const request=addText(row,'button','AJAK TRADE');
    request.disabled=!onlineConnectionReady;
+   request.title='Jarak perkiraan '+p.distance+' blok';
    request.onclick=()=>requestTradeWithPlayer(p.user_id);
    row.prepend(label);socialPlayerListElement.append(row);
   });
