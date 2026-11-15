@@ -126,7 +126,7 @@ assert.ok(js.includes('inventory-detail') && js.includes("d.onclick=()=>{describ
 assert.ok(js.includes("if(document.hidden){clearControls();if(!activeWorldId)save(false);return}"), 'Backgrounding must clear controls; local save is a no-op');
 
 assert.ok(js.includes("addEventListener('offline',()=>{clearControls();onlineConnectionReady=false;"), 'Network loss must pause gameplay and disable online readiness');
-assert.ok(js.includes("addEventListener('online',()=>{if(!activeWorldId||!onlineUser||!sb)return;"), 'Online world must rejoin server after network recovery');
+assert.ok(js.includes("addEventListener('online',()=>{reconnectActiveWorld()});") && js.includes('async function reconnectActiveWorld(){if(worldReconnectPending||!activeWorldId||!onlineUser||!sb||!navigator.onLine)return;'), 'Online world must rejoin server after network recovery through the guarded reconnect path');
 
 assert.ok(js.includes('onlineConnectionReady=false') && js.includes('if(!onlineConnectionReady||!activeWorldId||!navigator.onLine)'), 'Gameplay must remain locked until a live server channel is connected');
 assert.ok(js.includes('ORBIT hanya dapat dimainkan secara online'), 'Disconnected state must clearly communicate online-only gameplay');
