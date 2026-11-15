@@ -72,6 +72,8 @@ assert.ok(js.includes("last_world_id,pos_x,pos_y"), 'Online player resume data m
 assert.ok(js.includes('pointerTarget.clientX-r.left+cameraX'), 'Mining target must follow pointer movement');
 assert.ok(js.includes('ty=player.y+player.h+T*.45;mineAt(tx,ty,dt*16.67)'), 'Dedicated mine button must target the block at the player\'s feet, not empty air above the ground');
 assert.ok(js.includes("sb.rpc('orbit_plant_seed'"), 'Crop planting must use the online server RPC');
+assert.ok(js.includes("m.includes('INVENTORY_LIMIT')"), 'Mining must explain a full inventory instead of exposing a raw server error');
+assert.ok(js.includes("m.includes('TILE_OCCUPIED')") && js.includes("m.includes('NOT_ENOUGH_ITEMS')"), 'Placement must explain occupied targets and missing block stacks');
 assert.ok(js.includes("onlineSavedPosition?.world_id===w.id"), 'Online world resume must restore the server position');
 assert.ok(js.includes("remoteData?.animation==='walk'"), 'Remote avatar movement state is missing');
 assert.ok(js.includes('p.x*T-player.w/2-cameraX'), 'Remote avatar horizontal alignment is incorrect');
