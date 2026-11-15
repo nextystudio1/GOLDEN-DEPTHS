@@ -79,10 +79,10 @@ assert.ok(js.includes("assets/items.svg#'+id"), 'Vector item icon renderer is mi
 for (const item of ['grass','dirt','stone','copper','crystal','wood','seed','pickaxe','stonepick','crystalpick']) {
   assert.ok(itemAssets.includes('id="' + item + '"'), 'Missing original item artwork: ' + item);
 }
-assert.ok(serviceWorker.includes('./assets/items.svg'), 'Offline cache must include item artwork');
-assert.ok(serviceWorker.includes('orbit-shell-v23'), 'Service worker cache version must be refreshed');
+assert.ok(!serviceWorker.includes('caches.open(CACHE)') && serviceWorker.includes('fetch(event.request)'), 'Service worker must never cache game content for offline play');
+assert.ok(html.includes('getRegistrations()') && html.includes('unregister()'), 'Existing offline service workers must be removed');
 assert.ok(js.includes("if(activeWorldId&&worldChannel&&onlineUser){lastPositionSyncKey='';ensureNearbyChunks().catch(()=>{});syncOnlinePosition();worldChannel.track("), 'Online world must resync position, nearby chunks and presence when the app resumes');
-assert.ok(serviceWorker.includes('./audio.js'), 'Offline cache must include the game audio engine');
+assert.ok(!serviceWorker.includes('caches.match(event.request)'), 'Service worker must not provide cached offline fallbacks');
 const audioEngine = fs.readFileSync('game/audio.js', 'utf8');
 assert.ok(audioEngine.includes("if(!ac||!unlocked)return;if(document.hidden){") && audioEngine.includes('ac.suspend?.()') && audioEngine.includes('ac.resume?.();startMusic()'), 'Audio must pause in background and resume when the app returns');
 assert.ok(html.includes('<script src="audio.js"></script>'), 'Audio engine must load before gameplay code');
@@ -128,3 +128,5 @@ assert.ok(js.includes('function save(showToast=false){if(showToast)toast(\'Progr
 assert.ok(!js.includes("toast('Mode offline aktif"), 'No offline-mode messaging or fallback may remain');
 
 assert.ok(js.includes('if(onlineUser?.id!==nextUser?.id){') && js.includes("$('#world-name').textContent=nextUser?'WORLD GATE':'LOGIN'"), 'Authentication changes must never switch into a local world');
+
+assert.ok(html.includes('caches.delete(key)') && html.includes('key.startsWith(\"orbit-shell-\")'), 'Legacy offline game caches must be deleted on launch');
